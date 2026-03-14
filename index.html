@@ -1,67 +1,225 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<title>OrderBot</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordina il tuo Bot Discord</title>
+    <style>
+        :root {
+            --discord-blurple: #5865F2;
+            --discord-dark: #23272A;
+            --discord-darker: #1E1F22;
+            --text-light: #F2F3F5;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--discord-darker) 0%, #000000 100%);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(35, 39, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: all 0.5s ease;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 28px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(88, 101, 242, 0.5);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #B5BAC1;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #1E1F22;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border: 1px solid var(--discord-blurple);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--discord-blurple);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background-color: #4752C4;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Gestione visibilità sezioni */
+        #order-section {
+            display: none;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #43b581; /* Verde Discord */
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
+    <div class="container" id="login-section">
+        <h2>Accesso Richiesto</h2>
+        <p style="color: #B5BAC1; margin-bottom: 30px;">Devi essere nel server per ordinare un bot.</p>
+        <button onclick="simulateLogin()">Log in con Discord</button>
+    </div>
 
-<!-- Navbar -->
-<div id="navbar" style="display:none;">
-  <button onclick="showPage('orderBotPage')">Order Bot</button>
-  <button onclick="showPage('hostPage')">Host H24</button>
-  <button onclick="showPage('aboutPage')">About Us</button>
-  <span id="loginNick"></span>
-</div>
+    <div class="container" id="order-section">
+        <h2>Ordina Bot Discord</h2>
+        
+        <div class="input-group">
+            <label for="botName">Nome Bot</label>
+            <input type="text" id="botName" placeholder="es. DiscoBot" required>
+        </div>
+        
+        <div class="input-group">
+            <label for="botDesc">Descrivi il bot</label>
+            <textarea id="botDesc" placeholder="Quali funzioni deve avere?" required></textarea>
+        </div>
+        
+        <button onclick="sendToDiscord()">INVIA</button>
+        <div class="status-msg" id="status-msg">✅ Ordine inviato con successo!</div>
+    </div>
 
-<!-- Schermata login -->
-<div id="loginPage" class="center-box">
-  <h1>OrderBot</h1>
-  <button id="loginBtn">Login Discord</button>
-  <p id="serverWarning" style="color:#ff5555;margin-top:15px;display:none;">Devi entrare nel nostro server Discord prima di ordinare!</p>
-  <button id="joinDiscord">Entra nel nostro Discord</button>
-</div>
+    <script>
+        // WEBHOOK URL - Sostituisci questo con il tuo vero link webhook
+        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1482410262865776741/3aqrc9fTEp0TktXccOavkJcnWooBaDX8SJOh9YubenMssCXmSmHBF0_KwcV5WUqNAJ4s';
 
-<!-- OrderBot Page -->
-<div id="orderBotPage" class="page" style="display:none;">
-  <h2>Order Bot</h2>
-  <div class="bot-card" id="configBot">
-    <p>Clicca per configurare il tuo bot</p>
-  </div>
-</div>
+        // Funzione per simulare il login (solo per l'interfaccia grafica)
+        function simulateLogin() {
+            const loginBtn = document.querySelector('#login-section button');
+            loginBtn.innerText = "Verifica in corso...";
+            
+            setTimeout(() => {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('order-section').style.display = 'block';
+            }, 1000);
+        }
 
-<!-- Host H24 Page -->
-<div id="hostPage" class="page" style="display:none;">
-  <h2>Host Bot H24</h2>
-  <div class="bot-card" id="hostBot">
-    <p>Clicca per configurare l’hosting</p>
-    <small>Apri ticket nel server Discord</small>
-  </div>
-</div>
+        // Funzione per inviare i dati al Webhook
+        async function sendToDiscord() {
+            const botName = document.getElementById('botName').value.trim();
+            const botDesc = document.getElementById('botDesc').value.trim();
+            const statusMsg = document.getElementById('status-msg');
 
-<!-- Form configurazione -->
-<div id="formPage" class="page" style="display:none;">
-  <form id="orderForm">
-    <h2 id="formTitle">Configura Bot</h2>
-    <input type="text" id="botName" placeholder="Nome bot" required>
-    <textarea id="description" placeholder="Descrizione bot"></textarea>
-    <input type="text" id="budgetField" placeholder="Budget richiesto" required>
-    <button type="submit">Invia Ordine</button>
-  </form>
-</div>
+            if (!botName || !botDesc) {
+                alert("Per favore, compila tutti i campi!");
+                return;
+            }
 
-<!-- About Us Page -->
-<div id="aboutPage" class="page" style="display:none;">
-  <h2>About Us</h2>
-  <p>🔥 OrderBot creato da <strong>Pasquitos</strong></p>
-  <p>💻 Tecnologia: GitHub Pages, HTML/CSS/JS, Webhook Discord</p>
-  <p>⚡ Funzioni principali: Ordina Bot, Host H24, Ticket supporto</p>
-  <p>🌐 Sicuro, veloce e facile da usare!</p>
-</div>
+            // Costruzione del messaggio Embed
+            const payload = {
+                embeds: [
+                    {
+                        title: "🚀 Nuovo Ordine Bot Ricevuto!",
+                        color: 5814783, // Colore Blurple
+                        fields: [
+                            {
+                                name: "Nome Bot Richiesto",
+                                value: botName,
+                                inline: true
+                            },
+                            {
+                                name: "Descrizione e Funzioni",
+                                value: botDesc
+                            }
+                        ],
+                        footer: {
+                            text: "Sistema di Ordinazione"
+                        },
+                        timestamp: new Date().toISOString()
+                    }
+                ]
+            };
 
-<script src="script.js"></script>
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    statusMsg.style.display = 'block';
+                    document.getElementById('botName').value = '';
+                    document.getElementById('botDesc').value = '';
+                    
+                    // Nascondi il messaggio di successo dopo 3 secondi
+                    setTimeout(() => {
+                        statusMsg.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert("Errore durante l'invio dell'ordine. Controlla il Webhook.");
+                }
+            } catch (error) {
+                console.error("Errore:", error);
+                alert("Impossibile connettersi a Discord.");
+            }
+        }
+    </script>
 </body>
 </html>
