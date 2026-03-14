@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Bot Discord</title>
+    <style>
+        :root {
+            --discord-blurple: #5865F2;
+            --discord-dark: #23272A;
+            --discord-darker: #1E1F22;
+            --text-light: #F2F3F5;
+            --success-green: #43b581;
+            --gold-premium: #FEE75C;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1011 0%, var(--discord-darker) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Intestazione */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 42px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #ffffff, #a1a9f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: #949BA4;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 10px auto;
+        }
+
+        /* Griglia dei Bot */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* Singola Card */
+        .bot-card {
+            background: rgba(35, 39, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bot-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border-color: rgba(88, 101, 242, 0.5);
+        }
+
+        /* Stile specifico per il bot più venduto */
+        .bot-card.popular {
+            border: 2px solid var(--discord-blurple);
+            transform: scale(1.05);
+            background: linear-gradient(180deg, rgba(88,101,242,0.1) 0%, rgba(35,39,42,0.6) 100%);
+        }
+
+        .bot-card.popular:hover {
+            transform: scale(1.05) translateY(-15px);
+            box-shadow: 0 20px 50px rgba(88, 101, 242, 0.4);
+        }
+
+        .badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--discord-blurple);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(88, 101, 242, 0.5);
+        }
+
+        /* Testi interni alla card */
+        .bot-title { font-size: 24px; font-weight: 800; margin-bottom: 15px; }
+        .bot-card.popular .bot-title { color: var(--discord-blurple); }
+        
+        .price { font-size: 36px; font-weight: 900; margin-bottom: 5px; }
+        .price span { font-size: 16px; color: #949BA4; font-weight: normal; }
+        .old-price { text-decoration: line-through; color: #ed4245; font-size: 16px; margin-bottom: 20px; display: block; }
+
+        .features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 40px 0;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .features li {
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: #D1D5DB;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features li::before {
+            content: "✅";
+            font-size: 14px;
+        }
+
+        /* Pulsante d'acquisto */
+        .btn-buy {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+
+        .btn-buy.standard { background: #4E5058; }
+        .btn-buy.standard:hover { background: #6D6F78; }
+
+        .btn-buy.premium {
+            background: var(--discord-blurple);
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+        }
+        .btn-buy.premium:hover {
+            background: #4752C4;
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigazione */
+        .nav-link {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: #949BA4;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .nav-link:hover { color: white; }
+
+        @media (max-width: 900px) {
+            .bot-card.popular { transform: scale(1); }
+            .bot-card.popular:hover { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-link">← Torna alla Home / Ordina</a>
+
+    <header>
+        <h1>I Nostri Bot</h1>
+        <p class="subtitle">Scegli la potenza perfetta per il tuo server. Sistemi stabili, veloci e completamente personalizzabili.</p>
+    </header>
+
+    <div class="pricing-grid">
+        
+        <div class="bot-card">
+            <div class="bot-title">Starter Bot</div>
+            <div class="price">€1<span>/mese</span></div>
+            <span class="old-price"></span>
+            <ul class="features">
+                <li>Comandi di Moderazione Base (Ban, Kick, Mute)</li>
+                <li>Sistema di Benvenuto/Addio</li>
+                <li>Log</li>
+                <li>H24</li>
+            </ul>
+            <a href="index.html" class="btn-buy standard">Scegli Starter</a>
+        </div>
+
+        <div class="bot-card popular">
+            <div class="badge">🔥 Più Venduto</div>
+            <div class="bot-title">Bot completo</div>
+            <div class="price">€10<span>/mese</span></div>
+            <span class="old-price">Invece di €15</span>
+            <ul class="features">
+                <li>Sistema Ticket (Pulsanti e Menu a tendina)</li>
+                <li>Economia</li>
+                <li>Automod (Antispam, Anti-link)</li>
+                <li>Setup e Configurazione inclusi</li>
+            </ul>
+            <a href="index.html" class="btn-buy premium">Ordina Bot</a>
+        </div>
+
+        <div class="bot-card">
+            <div class="bot-title">Bot Ticket</div>
+            <div class="price">2€/mese</div>
+            <span class="old-price"></span>
+            <ul class="features">
+                <li>Tante Categorie</li>
+                <li>Comandi /assegna, /trasferisci, /claim etc</li>
+                <li>H24</li>
+            </ul>
+            <a href="index.html" class="btn-buy standard">Ordina Bot</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
