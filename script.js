@@ -23,7 +23,7 @@ setInterval(draw,35);
 
 // ===== LOGIN DISCORD =====
 const CLIENT_ID = "1471875353885675725";
-const REDIRECT_URI = "https://orderbot-web.github.io/";  
+const REDIRECT_URI = "https://orderbot-web.github.io";  
 const SCOPE = "identify";
 const loginBtn = document.getElementById("loginBtn");
 loginBtn.addEventListener("click", ()=>{
