@@ -17,15 +17,23 @@
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f1011 0%, var(--discord-darker) 100%);
+            background: linear-gradient(-45deg, #0f1011, var(--discord-darker), #23272a, #0f1011);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
             color: var(--text-light);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            padding-top: 70px; /* Spazio per la navbar */
+            padding-top: 100px; /* Spazio per la navbar */
             box-sizing: border-box;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* --- NAVBAR --- */
@@ -45,40 +53,16 @@
             z-index: 1000;
         }
 
-        .nav-logo {
-            font-size: 22px;
-            font-weight: 900;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
+        .nav-logo { font-size: 22px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; }
         .nav-logo span { color: var(--discord-blurple); }
 
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
+        .nav-links { display: flex; gap: 15px; }
         .nav-links a {
-            color: #B5BAC1;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 15px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            color: #B5BAC1; text-decoration: none; font-weight: bold; font-size: 15px;
+            padding: 8px 16px; border-radius: 8px; transition: all 0.3s ease;
         }
-
-        .nav-links a:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .nav-links a.active {
-            color: white;
-            background: var(--discord-blurple);
-        }
+        .nav-links a:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+        .nav-links a.active { color: white; background: var(--discord-blurple); }
 
         /* --- FINE NAVBAR --- */
 
@@ -182,6 +166,7 @@
         <div class="nav-links">
             <a href="index.html" class="active">Home</a>
             <a href="store.html">Store</a>
+            <a href="about.html">Chi Siamo</a>
         </div>
     </nav>
 
