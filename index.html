@@ -7,28 +7,63 @@
 </head>
 <body>
 
-<div id="topBar" style="display:none;">
-  Loggato come: <span id="discordNick"></span>
-  <button id="joinDiscord">Entra nel nostro Discord</button>
-</div>
-
 <canvas id="matrix"></canvas>
 
-<div class="main-container">
+<!-- Navbar: appare dopo login -->
+<div id="navbar" style="display:none;">
+  <button onclick="scrollToSection('botSection')">Order Bot</button>
+  <button onclick="scrollToSection('hostSection')">Host H24</button>
+  <button onclick="scrollToSection('aboutSection')">About Us</button>
+  <span id="loginNick" style="margin-left:auto;color:#00ff9d;"></span>
+</div>
 
-  <div id="startScreen" class="center-box">
-    <h1>OrderBot</h1>
-    <button id="loginBtn">Login Discord</button>
+<!-- Schermata login iniziale -->
+<div id="startScreen" class="center-box">
+  <h1>OrderBot</h1>
+  <button id="loginBtn">Login Discord</button>
+</div>
+
+<!-- Schermata principale -->
+<div id="mainScreen" style="display:none;">
+
+  <!-- Quadrati Bot -->
+  <div id="botSection" class="bot-boxes">
+    <div class="bot-card" id="configBot">
+      <h2>Order Bot</h2>
+      <p>Clicca per configurare il tuo bot</p>
+    </div>
   </div>
 
-  <div id="formScreen" class="center-box" style="display:none;">
-    <h1>Configura il tuo bot</h1>
+  <div id="hostSection" class="bot-boxes">
+    <div class="bot-card" id="hostBot">
+      <h2>Host Bot H24</h2>
+      <p>Clicca per configurare l’hosting</p>
+      <small>Apri ticket nel server Discord</small>
+    </div>
+  </div>
+
+  <!-- Form configurazione -->
+  <div id="formScreen" style="display:none;">
     <form id="orderForm">
+      <h2 id="botFormTitle">Configura Bot</h2>
       <input type="text" id="botName" placeholder="Nome bot" required>
       <textarea id="description" placeholder="Descrizione bot"></textarea>
-      <input type="text" id="features" placeholder="Funzioni richieste">
+      <input type="text" id="budgetField" placeholder="Budget richiesto" required>
       <button type="submit">Invia Ordine</button>
     </form>
+  </div>
+
+  <!-- Pulsante Discord in basso -->
+  <div style="text-align:center;margin-top:40px;">
+    <button id="joinDiscord">Entra nel nostro Discord</button>
+  </div>
+
+  <!-- About Us / Chi Siamo -->
+  <div id="aboutSection" class="about-section">
+    <h2>About Us</h2>
+    <p>🔥 OrderBot - Il tuo bot Discord veloce e sicuro</p>
+    <p>💻 Creato da [pasquitos]</p>
+    <p>🌐 Supportato da GitHub Pages & Webhook Discord</p>
   </div>
 
 </div>
