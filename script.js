@@ -16,16 +16,17 @@ function draw() {
     const text = letters[Math.floor(Math.random()*letters.length)];
     ctx.fillText(text,i * fontSize, drops[i]*fontSize);
     if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
-    drops[i] ++;
+    drops[i]++;
   }
 }
 setInterval(draw,35);
 
 // ===== LOGIN DISCORD =====
 const CLIENT_ID = "1471875353885675725";
-const REDIRECT_URI = "https://orderbot-web.github.io";  
+const REDIRECT_URI = "https://orderbot-web.github.io/"; // deve corrispondere esattamente a Discord Developer Portal
 const SCOPE = "identify";
 const loginBtn = document.getElementById("loginBtn");
+
 loginBtn.addEventListener("click", ()=>{
   const oauthURL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPE}`;
   window.location.href = oauthURL;
@@ -40,6 +41,7 @@ function getTokenFromURL(){
   }
   return null;
 }
+
 const token = getTokenFromURL();
 
 if(token){
@@ -52,7 +54,7 @@ if(token){
   })
   .then(res => res.json())
   .then(user => {
-    window.discordUser = { id:user.id, username:user.username };
+    window.discordUser = { id:user.id, username:user.username, discriminator:user.discriminator };
 
     // Mostra top bar con nickname
     document.getElementById("discordNick").innerText = `${user.username}#${user.discriminator}`;
@@ -83,7 +85,7 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
           { name:"🤖 Nome Bot", value: data.botName },
           { name:"📄 Descrizione", value: data.description || "N/A"},
           { name:"⚙️ Funzioni", value: data.features || "N/A"},
-          { name:"👤 Utente", value: `${window.discordUser.username} (${window.discordUser.id})` }
+          { name:"👤 Utente", value: `${window.discordUser.username}#${window.discordUser.discriminator} (${window.discordUser.id})` }
         ],
         timestamp: new Date().toISOString()
       }]
