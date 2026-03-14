@@ -1,4 +1,4 @@
-// ------------------- MATRIX ANIMATION -------------------
+// MATRIX ANIMATION
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
@@ -21,9 +21,9 @@ function draw() {
 }
 setInterval(draw,35);
 
-// ------------------- LOGIN DISCORD -------------------
-const CLIENT_ID = "1471875353885675725"; // metti il tuo Client ID
-const REDIRECT_URI = "https://orderbot-web.github.io/"; // metti il tuo GitHub Pages URL
+// LOGIN DISCORD
+const CLIENT_ID = "1471875353885675725";
+const REDIRECT_URI = "https://orderbot-web.github.io"; // deve corrispondere esattamente all'app
 const SCOPE = "identify";
 const loginBtn = document.getElementById("loginBtn");
 
@@ -32,7 +32,7 @@ loginBtn.addEventListener("click", ()=>{
   window.location.href = oauthURL;
 });
 
-// ------------------- OTTIENI TOKEN DAL URL -------------------
+// OTTIENI TOKEN DAL URL
 function getTokenFromURL(){
   if(window.location.hash){
     const hash = window.location.hash.substring(1);
@@ -48,18 +48,17 @@ if(token){
   document.getElementById("startScreen").style.display="none";
   document.getElementById("formScreen").style.display="block";
 
-  // FETCH DATI UTENTE
   fetch("https://discord.com/api/users/@me", {
     headers: {Authorization: `Bearer ${token}`}
   })
-  .then(res=>res.json())
-  .then(user=>{
+  .then(res => res.json())
+  .then(user => {
     window.discordUser = {id:user.id, username:user.username};
     console.log("Utente Discord:", window.discordUser);
   });
 }
 
-// ------------------- WEBHOOK DISCORD -------------------
+// WEBHOOK DISCORD - INVIO EMBED
 const webhookURL = "https://discord.com/api/v10/webhooks/1482382897653616702/Ev1BX-4HhdqzrR6EuAty_IlMdZr0H2GOCg0gIBiN71tOQQbdbpC-dxugO8XxWEQNttzW";
 
 document.getElementById("orderForm").addEventListener("submit", async function(e){
@@ -70,17 +69,25 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
     description: document.getElementById("description").value,
     features: document.getElementById("features").value
   };
+  
   await fetch(webhookURL,{
     method:"POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({
-      content: `📦 NUOVO ORDINE BOT
-🤖 Nome Bot: ${data.botName}
-📄 Descrizione: ${data.description}
-⚙️ Funzioni: ${data.features}
-👤 Utente: ${window.discordUser.username} (${window.discordUser.id})`
+      embeds: [{
+        title: "📦 Nuovo Ordine Bot",
+        color: 0x00ff9d,
+        fields: [
+          {name: "🤖 Nome Bot", value: data.botName},
+          {name: "📄 Descrizione", value: data.description || "N/A"},
+          {name: "⚙️ Funzioni", value: data.features || "N/A"},
+          {name: "👤 Utente", value: `${window.discordUser.username} (${window.discordUser.id})`}
+        ],
+        timestamp: new Date().toISOString()
+      }]
     })
   });
-  alert("Ordine inviato con successo!");
+
+  alert("Ordine inviato con embed al webhook!");
   document.getElementById("orderForm").reset();
 });
