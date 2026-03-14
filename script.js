@@ -1,4 +1,4 @@
-// MATRIX ANIMATION
+// ===== MATRIX ANIMATION =====
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
@@ -14,25 +14,24 @@ function draw() {
   ctx.font = fontSize + "px monospace";
   for(let i=0;i<drops.length;i++){
     const text = letters[Math.floor(Math.random()*letters.length)];
-    ctx.fillText(text,i*fontSize,drops[i]*fontSize);
-    if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
-    drops[i]++;
+    ctx.fillText(text,i * fontSize, drops[i]*fontSize);
+    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
+    drops[i] ++;
   }
 }
 setInterval(draw,35);
 
-// LOGIN DISCORD
+// ===== LOGIN DISCORD =====
 const CLIENT_ID = "1471875353885675725";
-const REDIRECT_URI = "https://orderbot-web.github.io"; // deve corrispondere esattamente all'app
+const REDIRECT_URI = "https://orderbot-web.github.io/";  
 const SCOPE = "identify";
 const loginBtn = document.getElementById("loginBtn");
-
 loginBtn.addEventListener("click", ()=>{
   const oauthURL = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPE}`;
   window.location.href = oauthURL;
 });
 
-// OTTIENI TOKEN DAL URL
+// ===== OTTIENI TOKEN DAL URL =====
 function getTokenFromURL(){
   if(window.location.hash){
     const hash = window.location.hash.substring(1);
@@ -41,26 +40,29 @@ function getTokenFromURL(){
   }
   return null;
 }
-
 const token = getTokenFromURL();
 
 if(token){
   document.getElementById("startScreen").style.display="none";
   document.getElementById("formScreen").style.display="block";
 
+  // ===== FETCH DATI UTENTE DISCORD =====
   fetch("https://discord.com/api/users/@me", {
-    headers: {Authorization: `Bearer ${token}`}
+    headers: { Authorization: `Bearer ${token}` }
   })
   .then(res => res.json())
   .then(user => {
-    window.discordUser = {id:user.id, username:user.username};
-    console.log("Utente Discord:", window.discordUser);
+    window.discordUser = { id:user.id, username:user.username };
+
+    // Mostra top bar con nickname
+    document.getElementById("discordNick").innerText = `${user.username}#${user.discriminator}`;
+    document.getElementById("topBar").style.display="flex";
   });
 }
 
-// WEBHOOK DISCORD - INVIO EMBED
+// ===== WEBHOOK DISCORD - EMBED =====
 const webhookURL = "https://discord.com/api/v10/webhooks/1482382897653616702/Ev1BX-4HhdqzrR6EuAty_IlMdZr0H2GOCg0gIBiN71tOQQbdbpC-dxugO8XxWEQNttzW";
-
+    
 document.getElementById("orderForm").addEventListener("submit", async function(e){
   e.preventDefault();
   if(!window.discordUser) return alert("Devi fare login Discord!");
@@ -69,25 +71,30 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
     description: document.getElementById("description").value,
     features: document.getElementById("features").value
   };
-  
+
   await fetch(webhookURL,{
     method:"POST",
-    headers: {"Content-Type":"application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       embeds: [{
         title: "📦 Nuovo Ordine Bot",
         color: 0x00ff9d,
         fields: [
-          {name: "🤖 Nome Bot", value: data.botName},
-          {name: "📄 Descrizione", value: data.description || "N/A"},
-          {name: "⚙️ Funzioni", value: data.features || "N/A"},
-          {name: "👤 Utente", value: `${window.discordUser.username} (${window.discordUser.id})`}
+          { name:"🤖 Nome Bot", value: data.botName },
+          { name:"📄 Descrizione", value: data.description || "N/A"},
+          { name:"⚙️ Funzioni", value: data.features || "N/A"},
+          { name:"👤 Utente", value: `${window.discordUser.username} (${window.discordUser.id})` }
         ],
         timestamp: new Date().toISOString()
       }]
     })
   });
 
-  alert("Ordine inviato con embed al webhook!");
+  alert("Ordine inviato!");
   document.getElementById("orderForm").reset();
+});
+
+// ===== PULSANTE "Entra nel nostro Discord" =====
+document.getElementById("joinDiscord").addEventListener("click", ()=>{
+  window.open("https://discord.gg/AAMypkTzeB","_blank");
 });
