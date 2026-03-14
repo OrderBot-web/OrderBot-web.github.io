@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordina il tuo Bot Discord</title>
+    <title>Hub Bot Discord</title>
     <style>
         :root {
             --discord-blurple: #5865F2;
             --discord-dark: #23272A;
             --discord-darker: #1E1F22;
             --text-light: #F2F3F5;
+            --success-green: #43b581;
         }
 
         body {
@@ -35,7 +36,19 @@
             max-width: 400px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             text-align: center;
-            transition: all 0.5s ease;
+            transition: all 0.4s ease;
+            display: none; /* Nascosto di default, gestito da JS */
+        }
+
+        /* Mostra solo il container attivo con un'animazione */
+        .container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
@@ -45,6 +58,12 @@
             letter-spacing: 1px;
             text-transform: uppercase;
             text-shadow: 0 0 10px rgba(88, 101, 242, 0.5);
+        }
+
+        p.subtitle {
+            color: #B5BAC1;
+            margin-bottom: 30px;
+            font-size: 15px;
         }
 
         .input-group {
@@ -105,25 +124,52 @@
             transform: scale(0.98);
         }
 
-        /* Gestione visibilità sezioni */
-        #order-section {
-            display: none;
+        /* Colore specifico per il pulsante Join */
+        .btn-join {
+            background-color: var(--success-green);
+        }
+        
+        .btn-join:hover {
+            background-color: #3ca374;
+            box-shadow: 0 0 15px rgba(67, 181, 129, 0.6);
         }
 
         .status-msg {
             margin-top: 15px;
             font-size: 14px;
-            color: #43b581; /* Verde Discord */
+            color: var(--success-green);
             display: none;
+        }
+
+        /* Loader per simulare l'Auth */
+        .loader {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--discord-blurple);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container" id="login-section">
-        <h2>Accesso Richiesto</h2>
-        <p style="color: #B5BAC1; margin-bottom: 30px;">Devi essere nel server per ordinare un bot.</p>
-        <button onclick="simulateLogin()">Log in con Discord</button>
+    <div class="container active" id="home-section">
+        <h2>Benvenuto</h2>
+        <p class="subtitle">Per accedere ai nostri servizi e ordinare un bot, devi far parte della nostra community.</p>
+        <button class="btn-join" onclick="startAuth()">Unisciti al server</button>
+    </div>
+
+    <div class="container" id="loading-section">
+        <div class="loader"></div>
+        <h2>Autenticazione...</h2>
+        <p class="subtitle">Reindirizzamento a Discord in corso, attendi la verifica del server...</p>
     </div>
 
     <div class="container" id="order-section">
@@ -131,7 +177,7 @@
         
         <div class="input-group">
             <label for="botName">Nome Bot</label>
-            <input type="text" id="botName" placeholder="es. PartnerBot" required>
+            <input type="text" id="botName" placeholder="es. TicketyBot" required>
         </div>
         
         <div class="input-group">
@@ -139,23 +185,28 @@
             <textarea id="botDesc" placeholder="Quali funzioni deve avere?" required></textarea>
         </div>
         
-        <button onclick="sendToDiscord()">INVIA</button>
-        <div class="status-msg" id="status-msg">✅ Ordine inviato con successo!</div>
+        <button onclick="sendToDiscord()">INVIA ORDINE</button>
+        <div class="status-msg" id="status-msg">✅ Ordine inviato al Webhook!</div>
     </div>
 
     <script>
         // WEBHOOK URL - Sostituisci questo con il tuo vero link webhook
         const WEBHOOK_URL = 'https://discord.com/api/webhooks/1482410262865776741/3aqrc9fTEp0TktXccOavkJcnWooBaDX8SJOh9YubenMssCXmSmHBF0_KwcV5WUqNAJ4s';
 
-        // Funzione per simulare il login (solo per l'interfaccia grafica)
-        function simulateLogin() {
-            const loginBtn = document.querySelector('#login-section button');
-            loginBtn.innerText = "Verifica in corso...";
+        // Funzione per scambiare le schermate in modo fluido
+        function showSection(sectionId) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Inizio simulazione Auth Discord
+        function startAuth() {
+            showSection('loading-section');
             
+            // Finge che ci vogliano 2.5 secondi per verificare se sei nel server
             setTimeout(() => {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('order-section').style.display = 'block';
-            }, 1000);
+                showSection('order-section');
+            }, 2500);
         }
 
         // Funzione per inviare i dati al Webhook
@@ -164,17 +215,18 @@
             const botDesc = document.getElementById('botDesc').value.trim();
             const statusMsg = document.getElementById('status-msg');
 
+            // Controllo campi vuoti
             if (!botName || !botDesc) {
-                alert("Per favore, compila tutti i campi!");
+                alert("Per favore, compila tutti i campi prima di inviare l'ordine!");
                 return;
             }
 
-            // Costruzione del messaggio Embed
+            // Costruzione dell'Embed per Discord
             const payload = {
                 embeds: [
                     {
                         title: "🚀 Nuovo Ordine Bot Ricevuto!",
-                        color: 5814783, // Colore Blurple
+                        color: 5814783, // Colore Blurple di Discord
                         fields: [
                             {
                                 name: "Nome Bot Richiesto",
@@ -187,7 +239,7 @@
                             }
                         ],
                         footer: {
-                            text: "Sistema di Ordinazione"
+                            text: "Sistema di Ordinazione Bot"
                         },
                         timestamp: new Date().toISOString()
                     }
@@ -204,20 +256,21 @@
                 });
 
                 if (response.ok) {
+                    // Mostra messaggio di successo e svuota i campi
                     statusMsg.style.display = 'block';
                     document.getElementById('botName').value = '';
                     document.getElementById('botDesc').value = '';
                     
-                    // Nascondi il messaggio di successo dopo 3 secondi
+                    // Nascondi il messaggio dopo 3 secondi
                     setTimeout(() => {
                         statusMsg.style.display = 'none';
                     }, 3000);
                 } else {
-                    alert("Errore durante l'invio dell'ordine. Controlla il Webhook.");
+                    alert("Errore durante l'invio dell'ordine. Hai inserito il Webhook corretto?");
                 }
             } catch (error) {
-                console.error("Errore:", error);
-                alert("Impossibile connettersi a Discord.");
+                console.error("Errore di connessione:", error);
+                alert("Impossibile connettersi a Discord. Controlla la tua connessione.");
             }
         }
     </script>
