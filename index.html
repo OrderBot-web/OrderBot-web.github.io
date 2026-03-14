@@ -7,21 +7,30 @@
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
-
-<div class="order-container" id="startScreen">
-  <h2>Vuoi ordinare un bot?</h2>
-  <button id="loginBtn">Login Discord</button>
+<div id="topBar" style="display:none;">
+  Loggato come: <span id="discordNick"></span>
+  <button id="joinDiscord">Entra nel nostro Discord</button>
 </div>
 
-<div class="form-container" id="formScreen" style="display:none;">
-  <h2>Configura il tuo bot</h2>
-  <form id="orderForm">
-    <input type="text" id="botName" placeholder="Nome bot" required>
-    <textarea id="description" placeholder="Descrizione bot"></textarea>
-    <input type="text" id="features" placeholder="Funzioni richieste">
-    <button type="submit">Invia Ordine</button>
-  </form>
+<canvas id="matrix"></canvas>
+
+<div class="main-container">
+
+  <div id="startScreen" class="center-box">
+    <h1>OrderBot</h1>
+    <button id="loginBtn">Login Discord</button>
+  </div>
+
+  <div id="formScreen" class="center-box" style="display:none;">
+    <h1>Configura il tuo bot</h1>
+    <form id="orderForm">
+      <input type="text" id="botName" placeholder="Nome bot" required>
+      <textarea id="description" placeholder="Descrizione bot"></textarea>
+      <input type="text" id="features" placeholder="Funzioni richieste">
+      <button type="submit">Invia Ordine</button>
+    </form>
+  </div>
+
 </div>
 
 <script src="script.js"></script>
