@@ -11,189 +11,123 @@
             --discord-darker: #1E1F22;
             --text-light: #F2F3F5;
             --success-green: #43b581;
-            --gold-premium: #FEE75C;
         }
 
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f1011 0%, var(--discord-darker) 100%);
+            background: linear-gradient(-45deg, #0f1011, var(--discord-darker), #23272a, #0f1011);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
             color: var(--text-light);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px 20px;
+            padding: 120px 20px 40px 20px;
             box-sizing: border-box;
             overflow-x: hidden;
         }
 
-        /* Intestazione */
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-            animation: fadeInDown 0.8s ease;
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        h1 {
-            font-size: 42px;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: linear-gradient(to right, #ffffff, #a1a9f5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        p.subtitle {
-            color: #949BA4;
-            font-size: 18px;
-            max-width: 600px;
-            margin: 10px auto;
-        }
-
-        /* Griglia dei Bot */
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1100px;
+        /* --- NAVBAR --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-        }
-
-        /* Singola Card */
-        .bot-card {
-            background: rgba(35, 39, 42, 0.6);
+            background: rgba(30, 31, 34, 0.85);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            box-sizing: border-box;
+            z-index: 1000;
         }
 
-        .bot-card:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            border-color: rgba(88, 101, 242, 0.5);
-        }
+        .nav-logo { font-size: 22px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-logo span { color: var(--discord-blurple); }
 
-        /* Stile specifico per il bot più venduto */
-        .bot-card.popular {
-            border: 2px solid var(--discord-blurple);
-            transform: scale(1.05);
-            background: linear-gradient(180deg, rgba(88,101,242,0.1) 0%, rgba(35,39,42,0.6) 100%);
+        .nav-links { display: flex; gap: 15px; }
+        .nav-links a {
+            color: #B5BAC1; text-decoration: none; font-weight: bold; font-size: 15px;
+            padding: 8px 16px; border-radius: 8px; transition: all 0.3s ease;
         }
+        .nav-links a:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+        .nav-links a.active { color: white; background: var(--discord-blurple); }
 
-        .bot-card.popular:hover {
-            transform: scale(1.05) translateY(-15px);
-            box-shadow: 0 20px 50px rgba(88, 101, 242, 0.4);
-        }
+        /* --- FINE NAVBAR --- */
 
-        .badge {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--discord-blurple);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(88, 101, 242, 0.5);
-        }
+        header { text-align: center; margin-bottom: 50px; animation: fadeInDown 0.8s ease; width: 100%; }
+        h1 { font-size: 42px; margin: 0; text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(to right, #ffffff, #a1a9f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.subtitle { color: #949BA4; font-size: 18px; max-width: 600px; margin: 10px auto; }
 
-        /* Testi interni alla card */
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; width: 100%; margin-bottom: 60px; }
+
+        .bot-card { background: rgba(35, 39, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 40px 30px; text-align: center; position: relative; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
+        .bot-card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); border-color: rgba(88, 101, 242, 0.5); }
+
+        .bot-card.popular { border: 2px solid var(--discord-blurple); transform: scale(1.05); background: linear-gradient(180deg, rgba(88,101,242,0.1) 0%, rgba(35,39,42,0.6) 100%); }
+        .bot-card.popular:hover { transform: scale(1.05) translateY(-15px); box-shadow: 0 20px 50px rgba(88, 101, 242, 0.4); }
+
+        .badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--discord-blurple); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(88, 101, 242, 0.5); }
+
         .bot-title { font-size: 24px; font-weight: 800; margin-bottom: 15px; }
         .bot-card.popular .bot-title { color: var(--discord-blurple); }
-        
         .price { font-size: 36px; font-weight: 900; margin-bottom: 5px; }
         .price span { font-size: 16px; color: #949BA4; font-weight: normal; }
-        .old-price { text-decoration: line-through; color: #ed4245; font-size: 16px; margin-bottom: 20px; display: block; }
+        .old-price { text-decoration: line-through; color: #ed4245; font-size: 16px; margin-bottom: 20px; display: block; min-height: 19px; }
 
-        .features {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0 40px 0;
-            text-align: left;
-            flex-grow: 1;
-        }
+        .features { list-style: none; padding: 0; margin: 20px 0 40px 0; text-align: left; flex-grow: 1; }
+        .features li { margin-bottom: 12px; font-size: 15px; color: #D1D5DB; display: flex; align-items: center; gap: 10px; }
+        .features li::before { content: "✅"; font-size: 14px; }
 
-        .features li {
-            margin-bottom: 12px;
-            font-size: 15px;
-            color: #D1D5DB;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .btn-buy { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; color: white; display: inline-block; box-sizing: border-box; }
+        .btn-buy.standard { background: #4E5058; }
+        .btn-buy.standard:hover { background: #6D6F78; }
+        .btn-buy.premium { background: var(--discord-blurple); box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); }
+        .btn-buy.premium:hover { background: #4752C4; box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6); }
 
-        .features li::before {
-            content: "✅";
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto;
+            width: 100%;
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #949BA4;
             font-size: 14px;
         }
 
-        /* Pulsante d'acquisto */
-        .btn-buy {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: white;
-            display: inline-block;
-            box-sizing: border-box;
-        }
-
-        .btn-buy.standard { background: #4E5058; }
-        .btn-buy.standard:hover { background: #6D6F78; }
-
-        .btn-buy.premium {
-            background: var(--discord-blurple);
-            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
-        }
-        .btn-buy.premium:hover {
-            background: #4752C4;
-            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Navigazione */
-        .nav-link {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            color: #949BA4;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-        .nav-link:hover { color: white; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 900px) {
             .bot-card.popular { transform: scale(1); }
             .bot-card.popular:hover { transform: translateY(-10px); }
         }
+        @media (max-width: 600px) {
+            .navbar { padding: 15px 20px; }
+            .nav-logo { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-link">← Torna alla Home / Ordina</a>
+    <nav class="navbar">
+        <div class="nav-logo">Dev<span>Hub</span></div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="store.html" class="active">Store</a>
+            <a href="about.html">Chi Siamo</a>
+        </div>
+    </nav>
 
     <header>
         <h1>I Nostri Bot</h1>
@@ -231,7 +165,7 @@
 
         <div class="bot-card">
             <div class="bot-title">Bot Ticket</div>
-            <div class="price">2€/mese</div>
+            <div class="price">€2<span>/mese</span></div>
             <span class="old-price"></span>
             <ul class="features">
                 <li>Tante Categorie</li>
@@ -242,6 +176,10 @@
         </div>
 
     </div>
+
+    <footer>
+        &copy; 2026 Developer Hub. Tutti i diritti riservati.
+    </footer>
 
 </body>
 </html>
