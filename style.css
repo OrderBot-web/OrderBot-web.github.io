@@ -1,14 +1,129 @@
-body{margin:0;padding:0;overflow-x:hidden;font-family:monospace;background:black;color:#00ff9d;}
-canvas#matrix{position:fixed;top:0;left:0;z-index:-1;}
-.center-box{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
-#navbar{position:fixed;top:0;left:0;width:100%;display:flex;gap:15px;padding:10px 20px;background:rgba(0,0,0,0.8);box-shadow:0 0 15px #00ff9d;z-index:10;}
-#navbar button{background:none;border:2px solid #00ff9d;border-radius:20px;padding:8px 20px;color:#00ff9d;font-size:16px;cursor:pointer;transition:0.2s;}
-#navbar button:hover{background:#00ff9d;color:black;}
-.bot-boxes{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:100px;}
-.bot-card{background: rgba(0,255,157,0.15);border:2px solid #00ff9d;border-radius:25px;padding:25px;width:200px;text-align:center;cursor:pointer;box-shadow:0 0 15px #00ff9d;transition:0.3s;}
-.bot-card:hover{transform:scale(1.05);box-shadow:0 0 30px #00ff9d;}
-.about-section{text-align:center;margin:50px 0;color:#00ff9d;text-shadow:0 0 12px #00ff9d,0 0 24px #00ff9d;}
-button, input, textarea{font-family:monospace;}
-input, textarea{margin:5px 0;padding:8px;border-radius:10px;border:2px solid #00ff9d;background:rgba(0,0,0,0.3);color:#00ff9d;width:100%;box-sizing:border-box;}
-#orderForm button{margin-top:10px;padding:10px;border-radius:15px;background:#00ff9d;color:black;border:none;cursor:pointer;transition:0.2s;}
-#orderForm button:hover{background:#00ffa0;}
+/* BODY & SFONDO */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: monospace;
+  background: black;
+  color: #00ff9d;
+  overflow-x: hidden;
+}
+canvas#matrix {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+/* CENTER LOGIN */
+.center-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* NAVBAR */
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 15px;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.8);
+  box-shadow: 0 0 15px #00ff9d;
+  z-index: 10;
+  align-items: center;
+}
+#navbar button {
+  background: none;
+  border: 2px solid #00ff9d;
+  border-radius: 20px;
+  padding: 8px 20px;
+  color: #00ff9d;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+#navbar button:hover {
+  background: #00ff9d;
+  color: black;
+}
+
+/* LOGIN BUTTON */
+#loginBtn {
+  background: black;
+  color: #00ff9d;
+  border: 2px solid #00ff9d;
+  border-radius: 25px;
+  padding: 15px 40px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 0 15px #00ff9d;
+  transition: 0.3s;
+}
+#loginBtn:hover {
+  background: #00ff9d;
+  color: black;
+  box-shadow: 0 0 30px #00ff9d;
+  transform: scale(1.05);
+}
+
+/* BOT BOXES */
+.bot-boxes {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-top: 100px;
+}
+.bot-card {
+  background: rgba(0,255,157,0.15);
+  border: 2px solid #00ff9d;
+  border-radius: 25px;
+  padding: 25px;
+  width: 200px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 0 15px #00ff9d;
+  transition: 0.3s;
+}
+.bot-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px #00ff9d;
+}
+
+/* FORM */
+input, textarea {
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 10px;
+  border: 2px solid #00ff9d;
+  background: rgba(0,0,0,0.3);
+  color: #00ff9d;
+  width: 100%;
+  box-sizing: border-box;
+}
+#orderForm button {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 15px;
+  background: #00ff9d;
+  color: black;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+#orderForm button:hover {
+  background: #00ffa0;
+}
+
+/* ABOUT SECTION */
+.about-section {
+  text-align: center;
+  margin: 50px 0;
+  color: #00ff9d;
+  text-shadow: 0 0 12px #00ff9d, 0 0 24px #00ff9d;
+}
