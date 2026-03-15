@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hub Bot Discord | NebulaS1ST3MS</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         :root {
             --discord-blurple: #5865F2;
@@ -113,7 +114,7 @@
         .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--discord-blurple); background: rgba(0,0,0,0.4); }
         .input-group textarea { resize: vertical; min-height: 100px; }
 
-        /* --- SECURITY BOX (TOS & CAPTCHA) --- */
+        /* --- SECURITY BOX --- */
         .security-box {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -121,6 +122,9 @@
             padding: 15px;
             margin-bottom: 20px;
             text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra il captcha */
         }
 
         .checkbox-group {
@@ -130,46 +134,15 @@
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .checkbox-group input {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--discord-blurple);
-            cursor: pointer;
-        }
-
-        .checkbox-group label {
-            font-size: 13px;
-            color: #D1D5DB;
-            cursor: pointer;
-            line-height: 1.4;
-        }
-
-        .captcha-group label {
-            display: block;
-            font-size: 13px;
-            color: #B5BAC1;
-            margin-bottom: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .captcha-group input {
             width: 100%;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #2B2D31;
-            border-radius: 8px;
-            color: white;
-            font-size: 15px;
-            box-sizing: border-box;
-            transition: border 0.3s ease;
         }
 
-        .captcha-group input:focus {
-            outline: none;
-            border-color: var(--discord-blurple);
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--discord-blurple); cursor: pointer; }
+        .checkbox-group label { font-size: 13px; color: #D1D5DB; cursor: pointer; line-height: 1.4; }
+
+        /* Il contenitore del reCAPTCHA */
+        .g-recaptcha {
+            margin-top: 5px;
         }
 
         button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 15px; }
@@ -207,6 +180,7 @@
         @media (max-width: 600px) {
             .navbar { padding: 15px 20px; }
             .nav-logo { font-size: 18px; }
+            .g-recaptcha { transform: scale(0.85); transform-origin: 0 0; } /* Adatta il captcha sui telefoni piccoli */
         }
     </style>
 </head>
@@ -270,10 +244,7 @@
                     <input type="checkbox" id="tosCheck" required>
                     <label for="tosCheck">Accetto i Termini e Condizioni e confermo l'ordine.</label>
                 </div>
-                <div class="captcha-group">
-                    <label>🛡️ Verifica Anti-Spam: Quanto fa <span id="cap-n1">0</span> + <span id="cap-n2">0</span>?</label>
-                    <input type="number" id="captchaInput" placeholder="Inserisci il risultato numerico" required>
-                </div>
+                <div class="g-recaptcha" data-theme="dark" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
             </div>
             
             <button class="btn-primary" onclick="sendToDiscord()" id="btn-invia">INVIA ORDINE</button>
@@ -324,7 +295,6 @@
         const WEBHOOK_URL = 'https://discord.com/api/webhooks/1482410262865776741/3aqrc9fTEp0TktXccOavkJcnWooBaDX8SJOh9YubenMssCXmSmHBF0_KwcV5WUqNAJ4s';
 
         let currentUser = null;
-        let captchaTotal = 0; // Variabile per salvare il risultato del captcha
 
         window.onload = () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
@@ -368,25 +338,10 @@
             document.getElementById('user-avatar').src = avatarUrl;
         }
 
-        // Funzione per generare un nuovo CAPTCHA matematico
-        function generateCaptcha() {
-            const num1 = Math.floor(Math.random() * 10) + 1;
-            const num2 = Math.floor(Math.random() * 10) + 1;
-            document.getElementById('cap-n1').innerText = num1;
-            document.getElementById('cap-n2').innerText = num2;
-            captchaTotal = num1 + num2;
-            document.getElementById('captchaInput').value = ''; // Pulisce il campo
-        }
-
         function openOrderForm() {
             document.getElementById('home-section').classList.remove('active');
-            
             document.getElementById('marketing-boxes').style.display = 'none';
             document.getElementById('social-links').style.display = 'none';
-
-            // Genera il CAPTCHA quando si apre il form
-            generateCaptcha();
-
             setTimeout(() => { document.getElementById('order-section').classList.add('active'); }, 50);
         }
 
@@ -396,32 +351,23 @@
             const botName = document.getElementById('botName').value.trim();
             const botDesc = document.getElementById('botDesc').value.trim();
             const Budget = document.getElementById('Budget').value.trim();
-            
-            // Variabili Sicurezza
             const tosCheck = document.getElementById('tosCheck').checked;
-            const captchaInput = parseInt(document.getElementById('captchaInput').value);
+            
+            // CATTURA LA RISPOSTA DI GOOGLE RECAPTCHA
+            const recaptchaResponse = grecaptcha.getResponse();
 
             const btnInvia = document.getElementById('btn-invia');
             const statusSuccess = document.getElementById('status-success');
             const statusError = document.getElementById('status-error');
 
-            // Controlli form base
             if (!botName || !botDesc || !Budget) { 
-                alert("Per favore, compila tutti i campi descrittivi!"); 
-                return; 
+                alert("Per favore, compila tutti i campi descrittivi!"); return; 
             }
-
-            // CONTROLLO TERMINI E CONDIZIONI
             if (!tosCheck) {
-                alert("Devi accettare i Termini e Condizioni per inviare l'ordine!");
-                return;
+                alert("Devi accettare i Termini e Condizioni per inviare l'ordine!"); return;
             }
-
-            // CONTROLLO CAPTCHA
-            if (isNaN(captchaInput) || captchaInput !== captchaTotal) {
-                alert("Verifica Anti-Spam fallita! Hai inserito il numero sbagliato. Riprova.");
-                generateCaptcha(); // Rigenera numeri nuovi in caso di errore
-                return;
+            if (!recaptchaResponse) {
+                alert("Per favore, completa il CAPTCHA (Non sono un robot)!"); return;
             }
 
             btnInvia.innerText = "INVIO IN CORSO...";
@@ -440,7 +386,7 @@
                         { name: "📝 Descrizione & Funzioni", value: `\`\`\`${botDesc}\`\`\`` },
                         { name: "💴 Budget", value: `**${Budget}**`, inline: true }
                     ],
-                    footer: { text: "Verifica Anti-Spam: Superata ✅" },
+                    footer: { text: "Sicurezza: reCAPTCHA Verificato sul Client ✅" },
                     timestamp: new Date().toISOString()
                 }]
             };
@@ -456,8 +402,8 @@
                     document.getElementById('botName').value = '';
                     document.getElementById('botDesc').value = '';
                     document.getElementById('Budget').value = '';
-                    document.getElementById('tosCheck').checked = false; // Resetta la spunta
-                    generateCaptcha(); // Rigenera captcha per un eventuale ordine futuro
+                    document.getElementById('tosCheck').checked = false;
+                    grecaptcha.reset(); // Resetta il captcha per il prossimo ordine
                 } else { statusError.style.display = 'block'; }
             } catch (error) { statusError.style.display = 'block'; } 
             finally {
