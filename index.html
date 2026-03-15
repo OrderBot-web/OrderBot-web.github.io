@@ -26,7 +26,6 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            /* Spazio sopra e sotto per far "respirare" la pagina */
             padding-top: 180px; 
             padding-bottom: 100px;
             box-sizing: border-box;
@@ -71,7 +70,7 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            margin-bottom: 120px; /* Grande spazio sotto il pannello principale */
+            margin-bottom: 120px;
         }
 
         .glass-panel {
@@ -99,41 +98,6 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* --- LOGO PYTHON ANIMATO --- */
-        .python-logo-container {
-            position: absolute;
-            top: -60px; 
-            left: 50%;
-            transform: translateX(-50%);
-            width: 110px;
-            height: 110px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 25px rgba(88, 101, 242, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: floatAndPulse 5s ease-in-out infinite;
-        }
-
-        .python-logo {
-            width: auto;
-            height: 75px;
-            animation: pythonSpin 20s linear infinite;
-        }
-
-        @keyframes pythonSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes floatAndPulse {
-            0%, 100% { transform: translate(-50%, 0) scale(1); }
-            50% { transform: translate(-50%, -12px) scale(1.05); }
-        }
-
-        /* --- STILI TESTI E FORM --- */
         h2 { margin: 20px 0 10px 0; font-size: 32px; font-weight: 800; text-transform: uppercase; background: linear-gradient(to right, #5865F2, #a1a9f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.subtitle { color: #949BA4; margin-bottom: 30px; font-size: 15px; }
 
@@ -149,6 +113,65 @@
         .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--discord-blurple); background: rgba(0,0,0,0.4); }
         .input-group textarea { resize: vertical; min-height: 100px; }
 
+        /* --- SECURITY BOX (TOS & CAPTCHA) --- */
+        .security-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--discord-blurple);
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 13px;
+            color: #D1D5DB;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .captcha-group label {
+            display: block;
+            font-size: 13px;
+            color: #B5BAC1;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .captcha-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #2B2D31;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+        }
+
+        .captcha-group input:focus {
+            outline: none;
+            border-color: var(--discord-blurple);
+        }
+
         button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 15px; }
         .btn-primary { background-color: var(--discord-blurple); color: white; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); }
         .btn-primary:hover:not(:disabled) { background-color: #4752C4; box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6); transform: translateY(-2px); }
@@ -162,51 +185,20 @@
         .error { background: rgba(237, 66, 69, 0.2); color: var(--danger-red); border: 1px solid var(--danger-red); }
 
         /* --- SEZIONE MARKETING --- */
-        .marketing-section {
-            width: 100%;
-            max-width: 1100px;
-            padding: 0 20px;
-            box-sizing: border-box;
-            margin-bottom: 100px;
-        }
-
-        .marketing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .m-card {
-            background: rgba(35, 39, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-
+        .marketing-section { width: 100%; max-width: 1100px; padding: 0 20px; box-sizing: border-box; margin-bottom: 100px; }
+        .marketing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .m-card { background: rgba(35, 39, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 30px; text-align: center; transition: transform 0.3s ease, border-color 0.3s ease; }
         .m-card:hover { transform: translateY(-10px); border-color: var(--discord-blurple); background: rgba(35, 39, 42, 0.8); }
         .m-icon { font-size: 40px; margin-bottom: 15px; }
         .m-title { font-size: 20px; font-weight: bold; color: white; margin-bottom: 10px; }
         .m-desc { font-size: 15px; color: #949BA4; line-height: 1.5; }
 
         /* --- SEZIONE SOCIAL --- */
-        .social-section {
-            text-align: center;
-            margin-bottom: 50px;
-            width: 100%;
-        }
-
+        .social-section { text-align: center; margin-bottom: 50px; width: 100%; }
         .social-section h3 { color: #B5BAC1; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; }
         .social-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-        
-        .btn-social {
-            display: flex; align-items: center; gap: 10px; padding: 15px 30px;
-            border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 16px;
-            color: white; transition: all 0.3s ease; text-transform: uppercase;
-        }
+        .btn-social { display: flex; align-items: center; gap: 10px; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 16px; color: white; transition: all 0.3s ease; text-transform: uppercase; }
         .btn-social svg { width: 24px; height: 24px; fill: currentColor; }
-
         .btn-youtube { background-color: #FF0000; box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2); }
         .btn-youtube:hover { background-color: #CC0000; transform: translateY(-5px) scale(1.05); box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4); }
         .btn-tiktok { background-color: #000000; border: 1px solid #25F4EE; box-shadow: 0 5px 15px rgba(37, 244, 238, 0.1); }
@@ -232,10 +224,6 @@
     <div class="main-container">
         
         <div class="glass-panel active" id="home-section">
-            
-            <div class="python-logo-container">
-                <img src="assets/python.png" alt="Logo Python" class="python-logo">
-            </div>
 
             <h2>Developer Hub</h2>
             <p class="subtitle">Il portale esclusivo per ordinare il tuo bot personalizzato.</p>
@@ -275,6 +263,17 @@
             <div class="input-group">
                 <label for="Budget"> 💵 Budget</label>
                 <input type="text" id="Budget" placeholder="es. 10€" required>
+            </div>
+
+            <div class="security-box">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="tosCheck" required>
+                    <label for="tosCheck">Accetto i Termini e Condizioni e confermo l'ordine.</label>
+                </div>
+                <div class="captcha-group">
+                    <label>🛡️ Verifica Anti-Spam: Quanto fa <span id="cap-n1">0</span> + <span id="cap-n2">0</span>?</label>
+                    <input type="number" id="captchaInput" placeholder="Inserisci il risultato numerico" required>
+                </div>
             </div>
             
             <button class="btn-primary" onclick="sendToDiscord()" id="btn-invia">INVIA ORDINE</button>
@@ -325,6 +324,7 @@
         const WEBHOOK_URL = 'https://discord.com/api/webhooks/1482410262865776741/3aqrc9fTEp0TktXccOavkJcnWooBaDX8SJOh9YubenMssCXmSmHBF0_KwcV5WUqNAJ4s';
 
         let currentUser = null;
+        let captchaTotal = 0; // Variabile per salvare il risultato del captcha
 
         window.onload = () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
@@ -368,12 +368,24 @@
             document.getElementById('user-avatar').src = avatarUrl;
         }
 
+        // Funzione per generare un nuovo CAPTCHA matematico
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            document.getElementById('cap-n1').innerText = num1;
+            document.getElementById('cap-n2').innerText = num2;
+            captchaTotal = num1 + num2;
+            document.getElementById('captchaInput').value = ''; // Pulisce il campo
+        }
+
         function openOrderForm() {
             document.getElementById('home-section').classList.remove('active');
             
-            // Quando apri l'ordine nascondiamo i quadrati per lasciare lo schermo pulito e concentrarsi sull'acquisto
             document.getElementById('marketing-boxes').style.display = 'none';
             document.getElementById('social-links').style.display = 'none';
+
+            // Genera il CAPTCHA quando si apre il form
+            generateCaptcha();
 
             setTimeout(() => { document.getElementById('order-section').classList.add('active'); }, 50);
         }
@@ -384,11 +396,33 @@
             const botName = document.getElementById('botName').value.trim();
             const botDesc = document.getElementById('botDesc').value.trim();
             const Budget = document.getElementById('Budget').value.trim();
+            
+            // Variabili Sicurezza
+            const tosCheck = document.getElementById('tosCheck').checked;
+            const captchaInput = parseInt(document.getElementById('captchaInput').value);
+
             const btnInvia = document.getElementById('btn-invia');
             const statusSuccess = document.getElementById('status-success');
             const statusError = document.getElementById('status-error');
 
-            if (!botName || !botDesc || !Budget) { alert("Per favore, compila tutti i campi!"); return; }
+            // Controlli form base
+            if (!botName || !botDesc || !Budget) { 
+                alert("Per favore, compila tutti i campi descrittivi!"); 
+                return; 
+            }
+
+            // CONTROLLO TERMINI E CONDIZIONI
+            if (!tosCheck) {
+                alert("Devi accettare i Termini e Condizioni per inviare l'ordine!");
+                return;
+            }
+
+            // CONTROLLO CAPTCHA
+            if (isNaN(captchaInput) || captchaInput !== captchaTotal) {
+                alert("Verifica Anti-Spam fallita! Hai inserito il numero sbagliato. Riprova.");
+                generateCaptcha(); // Rigenera numeri nuovi in caso di errore
+                return;
+            }
 
             btnInvia.innerText = "INVIO IN CORSO...";
             btnInvia.disabled = true;
@@ -406,7 +440,7 @@
                         { name: "📝 Descrizione & Funzioni", value: `\`\`\`${botDesc}\`\`\`` },
                         { name: "💴 Budget", value: `**${Budget}**`, inline: true }
                     ],
-                    footer: { text: "Sviluppo Autenticato tramite Hub" },
+                    footer: { text: "Verifica Anti-Spam: Superata ✅" },
                     timestamp: new Date().toISOString()
                 }]
             };
@@ -422,6 +456,8 @@
                     document.getElementById('botName').value = '';
                     document.getElementById('botDesc').value = '';
                     document.getElementById('Budget').value = '';
+                    document.getElementById('tosCheck').checked = false; // Resetta la spunta
+                    generateCaptcha(); // Rigenera captcha per un eventuale ordine futuro
                 } else { statusError.style.display = 'block'; }
             } catch (error) { statusError.style.display = 'block'; } 
             finally {
