@@ -124,7 +124,7 @@
             text-align: left;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra il captcha */
+            align-items: center; 
         }
 
         .checkbox-group {
@@ -140,7 +140,6 @@
         .checkbox-group input { width: 18px; height: 18px; accent-color: var(--discord-blurple); cursor: pointer; }
         .checkbox-group label { font-size: 13px; color: #D1D5DB; cursor: pointer; line-height: 1.4; }
 
-        /* Il contenitore del reCAPTCHA */
         .g-recaptcha {
             margin-top: 5px;
         }
@@ -180,7 +179,7 @@
         @media (max-width: 600px) {
             .navbar { padding: 15px 20px; }
             .nav-logo { font-size: 18px; }
-            .g-recaptcha { transform: scale(0.85); transform-origin: 0 0; } /* Adatta il captcha sui telefoni piccoli */
+            .g-recaptcha { transform: scale(0.85); transform-origin: 0 0; } 
         }
     </style>
 </head>
@@ -199,7 +198,7 @@
         
         <div class="glass-panel active" id="home-section">
 
-            <h2>NEBULA SISTEMS </h2>
+            <h2>NEBULA SISTEMS</h2>
             <p class="subtitle">Il portale esclusivo per ordinare il tuo bot personalizzato.</p>
 
             <div class="user-profile" id="user-profile">
@@ -214,14 +213,15 @@
                 ⚡ Ordina Bot
             </button>
             
+            <button class="btn-primary" id="btn-ticket" onclick="creaTicket()" style="background-color: #43b581; display: none; margin-bottom: 15px;">
+               🎟️ Crea Ticket Supporto
+            </button>
+            
             <button class="btn-discord" id="btn-login" onclick="loginWithDiscord()">
                 <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord">
                 Registrati con Discord
             </button>
         </div>
-            <button class="btn-primary" id="btn-ticket" onclick="creaTicket()" style="background-color: #43b581; display: none; margin-bottom: 15px;">
-               🎟️ Crea Ticket Supporto
-           </button>
 
         <div class="glass-panel" id="order-section">
             <h2>Nuovo Ordine</h2>
@@ -337,6 +337,9 @@
             btnOrdina.disabled = false;
             btnOrdina.innerText = "⚡ Ordina Bot ORA";
 
+            // MOSTRA IL PULSANTE TICKET QUI DENTRO!
+            document.getElementById('btn-ticket').style.display = 'block';
+
             document.getElementById('user-profile').style.display = 'flex';
             document.getElementById('user-username').innerText = user.global_name || user.username;
             
@@ -353,6 +356,38 @@
             setTimeout(() => { document.getElementById('order-section').classList.add('active'); }, 50);
         }
 
+        async function creaTicket() {
+            if (!currentUser) { alert("Devi fare il login!"); return; }
+
+            const btnTicket = document.getElementById('btn-ticket');
+            btnTicket.innerText = "CREAZIONE IN CORSO...";
+            btnTicket.disabled = true;
+
+            const payload = {
+                embeds: [{
+                    title: "🎟️ Nuova Richiesta Ticket dal Sito!",
+                    color: 4437377, 
+                    fields: [
+                        { name: "👤 Utente", value: `<@${currentUser.id}>`, inline: true }
+                    ]
+                }]
+            };
+
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                alert("✅ Richiesta inviata! Torna su Discord, il tuo ticket è stato aperto dal bot.");
+            } catch (error) { 
+                alert("❌ Errore durante la creazione del ticket."); 
+            } finally {
+                btnTicket.innerText = "🎟️ Crea Ticket Supporto";
+                btnTicket.disabled = false;
+            }
+        }
+
         async function sendToDiscord() {
             if (!currentUser) { alert("Errore critico: non sei loggato!"); return; }
 
@@ -361,7 +396,6 @@
             const Budget = document.getElementById('Budget').value.trim();
             const tosCheck = document.getElementById('tosCheck').checked;
             
-            // CATTURA LA RISPOSTA DI GOOGLE RECAPTCHA
             const recaptchaResponse = grecaptcha.getResponse();
 
             const btnInvia = document.getElementById('btn-invia');
@@ -411,7 +445,7 @@
                     document.getElementById('botDesc').value = '';
                     document.getElementById('Budget').value = '';
                     document.getElementById('tosCheck').checked = false;
-                    grecaptcha.reset(); // Resetta il captcha per il prossimo ordine
+                    grecaptcha.reset(); 
                 } else { statusError.style.display = 'block'; }
             } catch (error) { statusError.style.display = 'block'; } 
             finally {
