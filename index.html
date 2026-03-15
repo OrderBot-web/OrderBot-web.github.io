@@ -12,6 +12,8 @@
             --text-light: #F2F3F5;
             --success-green: #43b581;
             --danger-red: #ed4245;
+            --python-yellow: #FFD43B;
+            --python-blue: #306998;
         }
 
         body {
@@ -22,11 +24,13 @@
             animation: gradientAnimation 15s ease infinite;
             color: var(--text-light);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            padding-top: 100px; /* Spazio per la navbar */
+            /* Ho aumentato tantissimo lo spazio sopra e sotto per far "respirare" la pagina */
+            padding-top: 180px; 
+            padding-bottom: 100px;
             box-sizing: border-box;
         }
 
@@ -64,7 +68,13 @@
         .nav-links a:hover { color: white; background: rgba(255, 255, 255, 0.08); }
         .nav-links a.active { color: white; background: var(--discord-blurple); }
 
-        /* --- FINE NAVBAR --- */
+        /* --- PANNELLO PRINCIPALE --- */
+        .main-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 120px; /* Grande spazio sotto il pannello principale */
+        }
 
         .glass-panel {
             background: rgba(35, 39, 42, 0.6);
@@ -78,7 +88,7 @@
             text-align: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: none;
-            margin: 20px;
+            position: relative;
         }
 
         .glass-panel.active {
@@ -91,60 +101,60 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        h2 {
-            margin: 0 0 10px 0;
-            font-size: 32px;
-            font-weight: 800;
-            text-transform: uppercase;
-            background: linear-gradient(to right, #5865F2, #a1a9f5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* --- LOGO PYTHON ANIMATO --- */
+        .python-logo-container {
+            position: absolute;
+            top: -60px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(88, 101, 242, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: floatAndPulse 5s ease-in-out infinite;
         }
 
+        .python-logo {
+            width: 75px;
+            height: 75px;
+            animation: pythonSpin 20s linear infinite;
+        }
+
+        @keyframes pythonSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes floatAndPulse {
+            0%, 100% { transform: translate(-50%, 0) scale(1); }
+            50% { transform: translate(-50%, -12px) scale(1.05); }
+        }
+
+        /* --- STILI TESTI E FORM --- */
+        h2 { margin: 20px 0 10px 0; font-size: 32px; font-weight: 800; text-transform: uppercase; background: linear-gradient(to right, #5865F2, #a1a9f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.subtitle { color: #949BA4; margin-bottom: 30px; font-size: 15px; }
 
-        .user-profile {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(88, 101, 242, 0.3);
-        }
-
-        .user-profile img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid var(--discord-blurple);
-        }
-
+        .user-profile { display: none; align-items: center; justify-content: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(88, 101, 242, 0.3); }
+        .user-profile img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--discord-blurple); }
         .user-info { text-align: left; }
         .user-info span { display: block; font-size: 12px; color: #949BA4; text-transform: uppercase; font-weight: bold; }
         .user-info strong { font-size: 18px; color: white; }
 
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #B5BAC1; text-transform: uppercase; font-weight: bold; }
-        .input-group input, .input-group textarea {
-            width: 100%; padding: 14px; background: rgba(0,0,0,0.2); border: 2px solid #2B2D31;
-            border-radius: 10px; color: white; font-size: 16px; box-sizing: border-box; transition: all 0.3s ease;
-        }
+        .input-group input, .input-group textarea { width: 100%; padding: 14px; background: rgba(0,0,0,0.2); border: 2px solid #2B2D31; border-radius: 10px; color: white; font-size: 16px; box-sizing: border-box; transition: all 0.3s ease; }
         .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--discord-blurple); background: rgba(0,0,0,0.4); }
         .input-group textarea { resize: vertical; min-height: 120px; }
 
-        button {
-            width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px;
-            font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-            transition: all 0.3s ease; margin-bottom: 15px;
-        }
-
+        button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 15px; }
         .btn-primary { background-color: var(--discord-blurple); color: white; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); }
         .btn-primary:hover:not(:disabled) { background-color: #4752C4; box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6); transform: translateY(-2px); }
         .btn-primary:disabled { background-color: #3b4045; color: #7b7e82; cursor: not-allowed; box-shadow: none; }
-
         .btn-discord { background-color: white; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-discord:hover { background-color: #e3e5e8; transform: translateY(-2px); }
         .btn-discord img { width: 20px; }
@@ -152,7 +162,58 @@
         .status-msg { margin-top: 15px; font-size: 14px; font-weight: bold; display: none; padding: 10px; border-radius: 8px; }
         .success { background: rgba(67, 181, 129, 0.2); color: var(--success-green); border: 1px solid var(--success-green); }
         .error { background: rgba(237, 66, 69, 0.2); color: var(--danger-red); border: 1px solid var(--danger-red); }
+
+        /* --- SEZIONE MARKETING --- */
+        .marketing-section {
+            width: 100%;
+            max-width: 1100px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            margin-bottom: 100px; /* Spazio prima dei social */
+        }
+
+        .marketing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .m-card {
+            background: rgba(35, 39, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .m-card:hover { transform: translateY(-10px); border-color: var(--discord-blurple); background: rgba(35, 39, 42, 0.8); }
+        .m-icon { font-size: 40px; margin-bottom: 15px; }
+        .m-title { font-size: 20px; font-weight: bold; color: white; margin-bottom: 10px; }
+        .m-desc { font-size: 15px; color: #949BA4; line-height: 1.5; }
+
+        /* --- SEZIONE SOCIAL --- */
+        .social-section {
+            text-align: center;
+            margin-bottom: 50px;
+            width: 100%;
+        }
+
+        .social-section h3 { color: #B5BAC1; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; }
+        .social-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
         
+        .btn-social {
+            display: flex; align-items: center; gap: 10px; padding: 15px 30px;
+            border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 16px;
+            color: white; transition: all 0.3s ease; text-transform: uppercase;
+        }
+        .btn-social svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .btn-youtube { background-color: #FF0000; box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2); }
+        .btn-youtube:hover { background-color: #CC0000; transform: translateY(-5px) scale(1.05); box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4); }
+        .btn-tiktok { background-color: #000000; border: 1px solid #25F4EE; box-shadow: 0 5px 15px rgba(37, 244, 238, 0.1); }
+        .btn-tiktok:hover { background-color: #111111; border-color: #FE2C55; transform: translateY(-5px) scale(1.05); box-shadow: 0 8px 25px rgba(254, 44, 85, 0.3); }
+
         @media (max-width: 600px) {
             .navbar { padding: 15px 20px; }
             .nav-logo { font-size: 18px; }
@@ -162,54 +223,103 @@
 <body>
 
     <nav class="navbar">
-        <div class="nav-logo">Dev<span>Hub</span></div>
+        <div class="nav-logo">Nebula<span>S1ST3MS</span></span></div>
         <div class="nav-links">
             <a href="index.html" class="active">Home</a>
             <a href="store.html">Store</a>
-            <a href="aboutus.html">Chi Siamo</a>
+            <a href="about.html">Chi Siamo</a>
         </div>
     </nav>
 
-    <div class="glass-panel active" id="home-section">
-        <h2>Developer Hub</h2>
-        <p class="subtitle">Il portale esclusivo per ordinare il tuo bot personalizzato.</p>
+    <div class="main-container">
+        
+        <div class="glass-panel active" id="home-section">
+            
+            <div class="python-logo-container">
+                <svg class="python-logo" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.7c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-24.9h148.8c14 0 16.5-12.2 18.8-23.5 10.8-51.5 10.9-102.1.1-152.6zM172.7 381.7c-11 0-19.8-9-19.8-19.8s8.9-19.8 19.8-19.8c11.1 0 19.8 9 19.8 19.8s-8.7 19.8-19.8 19.8zm220.7-181.2H231.2v-24.9h148.8c14 0 16.5-12.2 18.8-23.5 10.8-51.5 10.9-102.1.1-152.6C391.2 7.7 376.6-15.6 345.5-15.6H172.7c-29.2 0-53.4 25-53.4 54.3v101.7c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H107.1c-7.7-30.9-22.3-54.2-53.4-54.2H13.6v47.4c0 36.8 31.2 67.8 66.8 67.8h106.8c29.2 0 53.4 25 53.4 54.3v101.7c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-24.9h148.8c14 0 16.5-12.2 18.8-23.5 10.8-51.5 10.9-102.1.1-152.6zM226.2 130.3c-11 0-19.8-9-19.8-19.8s8.9-19.8 19.8-19.8c11.1 0 19.8 9 19.8 19.8s-8.7 19.8-19.8 19.8z" fill="url(#python_gradient)"/>
+                    <defs>
+                        <linearGradient id="python_gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--python-blue);stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:var(--python-yellow);stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
 
-        <div class="user-profile" id="user-profile">
-            <img id="user-avatar" src="" alt="Avatar">
-            <div class="user-info">
-                <span>Connesso come</span>
-                <strong id="user-username">Utente</strong>
+            <h2>Developer Hub</h2>
+            <p class="subtitle">Il portale esclusivo per ordinare il tuo bot personalizzato.</p>
+
+            <div class="user-profile" id="user-profile">
+                <img id="user-avatar" src="" alt="Avatar">
+                <div class="user-info">
+                    <span>Connesso come</span>
+                    <strong id="user-username">Utente</strong>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="btn-ordina" onclick="openOrderForm()" disabled>
+                ⚡ Ordina Bot
+            </button>
+            
+            <button class="btn-discord" id="btn-login" onclick="loginWithDiscord()">
+                <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord">
+                Registrati con Discord
+            </button>
+        </div>
+
+        <div class="glass-panel" id="order-section">
+            <h2>Nuovo Ordine</h2>
+            <p class="subtitle">Descrivi esattamente cosa ti serve.</p>
+            
+            <div class="input-group">
+                <label for="botName">Nome del Bot</label>
+                <input type="text" id="botName" placeholder="es. PasquiBot" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="botDesc">Funzionalità e Descrizione</label>
+                <textarea id="botDesc" placeholder="Che funzioni ha, Quali sono i cmandi etc..." required></textarea>
+            </div>
+            
+            <button class="btn-primary" onclick="sendToDiscord()" id="btn-invia">INVIA ORDINE</button>
+            
+            <div class="status-msg success" id="status-success">✅ Ordine inviato con successo!</div>
+            <div class="status-msg error" id="status-error">❌ Errore durante l'invio.</div>
+        </div>
+
+    </div> <div class="marketing-section" id="marketing-boxes">
+        <div class="marketing-grid">
+            <div class="m-card">
+                <div class="m-icon">🚀</div>
+                <div class="m-title">Consegna Lampo</div>
+                <div class="m-desc">Il tuo bot sarà online e pronto all'uso nel minor tempo possibile, senza attese infinite.</div>
+            </div>
+            <div class="m-card">
+                <div class="m-icon">💎</div>
+                <div class="m-title">Qualità Premium</div>
+                <div class="m-desc">Codice pulito e funzioni esclusive. Fai invidia agli altri server con sistemi che solo tu avrai.</div>
+            </div>
+            <div class="m-card">
+                <div class="m-icon">🛠️</div>
+                <div class="m-title">H24</div>
+                <div class="m-desc">Niente Host Difficile da gestire, ci siamo noi!.</div>
             </div>
         </div>
-
-        <button class="btn-primary" id="btn-ordina" onclick="openOrderForm()" disabled>
-            ⚡ Ordina Bot
-        </button>
-        
-        <button class="btn-discord" id="btn-login" onclick="loginWithDiscord()">
-            <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord">
-            Registrati con Discord
-        </button>
     </div>
 
-    <div class="glass-panel" id="order-section">
-        <h2>Nuovo Ordine</h2>
-        <p class="subtitle">Descrivi esattamente cosa ti serve.</p>
-        
-        <div class="input-group">
-            <label for="botName">Nome del Bot</label>
-            <input type="text" id="botName" placeholder="es. DiscoBot" required>
+    <div class="social-section" id="social-links">
+        <h3>Seguici sui nostri canali</h3>
+        <div class="social-links">
+            <a href="#" target="_blank" class="btn-social btn-youtube">
+                <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+            </a>
+            <a href="#" target="_blank" class="btn-social btn-tiktok">
+                <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+                TikTok
+            </a>
         </div>
-        
-        <div class="input-group">
-            <label for="botDesc">Funzionalità e Descrizione</label>
-            <textarea id="botDesc" placeholder="Lista dei comandi, sistemi di moderazione, ticket, ecc..." required></textarea>
-        </div>
-        
-        <button class="btn-primary" onclick="sendToDiscord()" id="btn-invia">INVIA ORDINE</button>
-        
-        <div class="status-msg success" id="status-success">✅ Ordine inviato con successo!</div>
-        <div class="status-msg error" id="status-error">❌ Errore durante l'invio.</div>
     </div>
 
     <script>
@@ -263,6 +373,11 @@
 
         function openOrderForm() {
             document.getElementById('home-section').classList.remove('active');
+            
+            // Quando apri l'ordine nascondiamo i quadrati per lasciare lo schermo pulito e concentrarsi sull'acquisto
+            document.getElementById('marketing-boxes').style.display = 'none';
+            document.getElementById('social-links').style.display = 'none';
+
             setTimeout(() => { document.getElementById('order-section').classList.add('active'); }, 50);
         }
 
