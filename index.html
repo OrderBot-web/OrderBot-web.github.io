@@ -301,8 +301,12 @@
         const CLIENT_ID = '1482413294336868584'; 
         const REDIRECT_URI = 'https://orderbot-web.github.io/';
         const WEBHOOK_URL = 'https://discord.com/api/webhooks/1482410262865776741/3aqrc9fTEp0TktXccOavkJcnWooBaDX8SJOh9YubenMssCXmSmHBF0_KwcV5WUqNAJ4s';
+        
+        // --- INSERISCI QUI L'ID DEL TUO SERVER DISCORD ---
+        const IL_TUO_SERVER_ID_QUI = '1477043614453596314'; 
 
         let currentUser = null;
+        let isUserInServer = false;
 
         window.onload = () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
@@ -310,35 +314,54 @@
 
             if (accessToken) {
                 window.history.replaceState({}, document.title, window.location.pathname);
-                fetchDiscordProfile(tokenType, accessToken);
+                fetchDiscordData(tokenType, accessToken);
             }
         };
 
         function loginWithDiscord() {
-            const authUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=identify`;
+            // Aggiunto "guilds" per leggere in quali server si trova l'utente
+            const authUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=identify%20guilds`;
             window.location.href = authUrl;
         }
 
-        async function fetchDiscordProfile(tokenType, accessToken) {
+        async function fetchDiscordData(tokenType, accessToken) {
             try {
-                const response = await fetch('https://discord.com/api/users/@me', {
+                const userResponse = await fetch('https://discord.com/api/users/@me', {
                     headers: { authorization: `${tokenType} ${accessToken}` }
                 });
-                if (response.ok) {
-                    currentUser = await response.json();
+                
+                const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+                    headers: { authorization: `${tokenType} ${accessToken}` }
+                });
+
+                if (userResponse.ok && guildsResponse.ok) {
+                    currentUser = await userResponse.json();
+                    const userGuilds = await guildsResponse.json();
+                    
+                    isUserInServer = userGuilds.some(guild => guild.id === IL_TUO_SERVER_ID_QUI);
+                    
                     updateUIWithUser(currentUser);
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) { console.error("Errore durante il fetch dei dati:", error); }
         }
 
         function updateUIWithUser(user) {
             document.getElementById('btn-login').style.display = 'none';
             const btnOrdina = document.getElementById('btn-ordina');
-            btnOrdina.disabled = false;
-            btnOrdina.innerText = "⚡ Ordina Bot ORA";
+            const btnTicket = document.getElementById('btn-ticket');
+            
+            btnTicket.style.display = 'block';
 
-            // MOSTRA IL PULSANTE TICKET QUI DENTRO!
-            document.getElementById('btn-ticket').style.display = 'block';
+            if (!isUserInServer) {
+                btnOrdina.innerText = "❌ ENTRA NEL SERVER";
+                btnTicket.innerText = "❌ ENTRA NEL SERVER";
+                btnOrdina.style.backgroundColor = "#ed4245";
+                btnTicket.style.backgroundColor = "#ed4245";
+                alert("Attenzione: Devi far parte del nostro Server Discord per poter ordinare o aprire un ticket!");
+            } else {
+                btnOrdina.disabled = false;
+                btnOrdina.innerText = "⚡ Ordina Bot ORA";
+            }
 
             document.getElementById('user-profile').style.display = 'flex';
             document.getElementById('user-username').innerText = user.global_name || user.username;
@@ -350,6 +373,10 @@
         }
 
         function openOrderForm() {
+            if (!isUserInServer) {
+                alert("Non puoi ordinare se non sei nel server Discord!");
+                return;
+            }
             document.getElementById('home-section').classList.remove('active');
             document.getElementById('marketing-boxes').style.display = 'none';
             document.getElementById('social-links').style.display = 'none';
@@ -358,11 +385,10 @@
 
         async function creaTicket() {
             if (!currentUser) { alert("Devi fare il login!"); return; }
-            if (!isUserInServer) { alert("Non puoi aprire un ticket se non sei nel server Discord!"); return; }
+            if (!isUserInServer) { alert("Devi essere nel server Discord!"); return; }
 
             const btnTicket = document.getElementById('btn-ticket');
             
-            // ANTI-SPAM: Se il bottone è già disabilitato (sta caricando), ferma subito il click
             if (btnTicket.disabled) return;
 
             btnTicket.innerText = "CREAZIONE IN CORSO...";
@@ -385,19 +411,17 @@
                     body: JSON.stringify(payload)
                 });
                 alert("✅ Richiesta inviata! Torna su Discord per controllare il ticket.");
-                
-                // ANTI-SPAM: Lasciamo il bottone DISABILITATO. Non lo sblocchiamo più.
                 btnTicket.innerText = "✅ TICKET APERTO";
             } catch (error) { 
-                alert("❌ Errore durante la creazione del ticket."); 
-                // Lo sblocchiamo SOLO se c'è stato un errore di connessione
+                alert("❌ Errore durante l'invio della richiesta."); 
                 btnTicket.innerText = "🎟️ Crea Ticket Supporto";
                 btnTicket.disabled = false;
             }
         }
 
         async function sendToDiscord() {
-            if (!currentUser) { alert("Errore critico: non sei loggato!"); return; }
+            if (!currentUser) { alert("Devi fare il login!"); return; }
+            if (!isUserInServer) { alert("Devi essere nel server Discord!"); return; }
 
             const botName = document.getElementById('botName').value.trim();
             const botDesc = document.getElementById('botDesc').value.trim();
