@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Bot Discord</title>
+    <title>Hub Bot Discord | NebulaS1ST3MS</title>
     <style>
         :root {
             --discord-blurple: #5865F2;
@@ -12,8 +12,6 @@
             --text-light: #F2F3F5;
             --success-green: #43b581;
             --danger-red: #ed4245;
-            --python-yellow: #FFD43B;
-            --python-blue: #306998;
         }
 
         body {
@@ -28,7 +26,7 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            /* Ho aumentato tantissimo lo spazio sopra e sotto per far "respirare" la pagina */
+            /* Spazio sopra e sotto per far "respirare" la pagina */
             padding-top: 180px; 
             padding-bottom: 100px;
             box-sizing: border-box;
@@ -149,7 +147,7 @@
         .input-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #B5BAC1; text-transform: uppercase; font-weight: bold; }
         .input-group input, .input-group textarea { width: 100%; padding: 14px; background: rgba(0,0,0,0.2); border: 2px solid #2B2D31; border-radius: 10px; color: white; font-size: 16px; box-sizing: border-box; transition: all 0.3s ease; }
         .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--discord-blurple); background: rgba(0,0,0,0.4); }
-        .input-group textarea { resize: vertical; min-height: 120px; }
+        .input-group textarea { resize: vertical; min-height: 100px; }
 
         button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 15px; }
         .btn-primary { background-color: var(--discord-blurple); color: white; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); }
@@ -169,7 +167,7 @@
             max-width: 1100px;
             padding: 0 20px;
             box-sizing: border-box;
-            margin-bottom: 100px; /* Spazio prima dei social */
+            margin-bottom: 100px;
         }
 
         .marketing-grid {
@@ -223,7 +221,7 @@
 <body>
 
     <nav class="navbar">
-        <div class="nav-logo">Nebula<span>S1ST3MS</span></span></div>
+        <div class="nav-logo">Nebula<span>S1ST3MS</span></div>
         <div class="nav-links">
             <a href="index.html" class="active">Home</a>
             <a href="store.html">Store</a>
@@ -271,7 +269,7 @@
             
             <div class="input-group">
                 <label for="botDesc"> 💡 Funzionalità e Descrizione</label>
-                <textarea id="botDesc" placeholder="Che funzioni ha, Quali sono i cmandi etc..." required></textarea>
+                <textarea id="botDesc" placeholder="Che funzioni ha, Quali sono i comandi etc..." required></textarea>
             </div>
             
             <div class="input-group">
@@ -285,7 +283,9 @@
             <div class="status-msg error" id="status-error">❌ Errore durante l'invio.</div>
         </div>
 
-    </div> <div class="marketing-section" id="marketing-boxes">
+    </div>
+
+    <div class="marketing-section" id="marketing-boxes">
         <div class="marketing-grid">
             <div class="m-card">
                 <div class="m-icon">🚀</div>
@@ -300,7 +300,7 @@
             <div class="m-card">
                 <div class="m-icon">🛠️</div>
                 <div class="m-title">H24</div>
-                <div class="m-desc">Niente Host Difficile da gestire, ci siamo noi!.</div>
+                <div class="m-desc">Niente Host Difficile da gestire, ci siamo noi!</div>
             </div>
         </div>
     </div>
@@ -308,11 +308,11 @@
     <div class="social-section" id="social-links">
         <h3>Seguici sui nostri canali</h3>
         <div class="social-links">
-            <a href="www.youtube.com/@Nebula" target="_blank" class="btn-social btn-youtube">
+            <a href="https://www.youtube.com/@Nebula" target="_blank" class="btn-social btn-youtube">
                 <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 YouTube
             </a>
-            <a href="www.tiktok.com/NebulaS1STEM" target="_blank" class="btn-social btn-tiktok">
+            <a href="https://www.tiktok.com/@NebulaS1STEM" target="_blank" class="btn-social btn-tiktok">
                 <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                 TikTok
             </a>
@@ -383,11 +383,12 @@
 
             const botName = document.getElementById('botName').value.trim();
             const botDesc = document.getElementById('botDesc').value.trim();
+            const Budget = document.getElementById('Budget').value.trim();
             const btnInvia = document.getElementById('btn-invia');
             const statusSuccess = document.getElementById('status-success');
             const statusError = document.getElementById('status-error');
 
-            if (!botName || !botDesc) { alert("Per favore, compila tutti i campi!"); return; }
+            if (!botName || !botDesc || !Budget) { alert("Per favore, compila tutti i campi!"); return; }
 
             btnInvia.innerText = "INVIO IN CORSO...";
             btnInvia.disabled = true;
@@ -402,7 +403,7 @@
                     fields: [
                         { name: "👤 Richiesto da", value: `<@${currentUser.id}> (${currentUser.username})`, inline: true },
                         { name: "🤖 Nome Bot", value: `**${botName}**`, inline: true },
-                        { name: "📝 Descrizione & Funzioni", value: `\`\`\`${botDesc}\`\`\`` }
+                        { name: "📝 Descrizione & Funzioni", value: `\`\`\`${botDesc}\`\`\`` },
                         { name: "💴 Budget", value: `**${Budget}**`, inline: true }
                     ],
                     footer: { text: "Sviluppo Autenticato tramite Hub" },
@@ -420,6 +421,7 @@
                     statusSuccess.style.display = 'block';
                     document.getElementById('botName').value = '';
                     document.getElementById('botDesc').value = '';
+                    document.getElementById('Budget').value = '';
                 } else { statusError.style.display = 'block'; }
             } catch (error) { statusError.style.display = 'block'; } 
             finally {
