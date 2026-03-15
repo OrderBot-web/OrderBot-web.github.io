@@ -358,8 +358,13 @@
 
         async function creaTicket() {
             if (!currentUser) { alert("Devi fare il login!"); return; }
+            if (!isUserInServer) { alert("Non puoi aprire un ticket se non sei nel server Discord!"); return; }
 
             const btnTicket = document.getElementById('btn-ticket');
+            
+            // ANTI-SPAM: Se il bottone è già disabilitato (sta caricando), ferma subito il click
+            if (btnTicket.disabled) return;
+
             btnTicket.innerText = "CREAZIONE IN CORSO...";
             btnTicket.disabled = true;
 
@@ -379,10 +384,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                alert("✅ Richiesta inviata! Torna su Discord, il tuo ticket è stato aperto dal bot.");
+                alert("✅ Richiesta inviata! Torna su Discord per controllare il ticket.");
+                
+                // ANTI-SPAM: Lasciamo il bottone DISABILITATO. Non lo sblocchiamo più.
+                btnTicket.innerText = "✅ TICKET APERTO";
             } catch (error) { 
                 alert("❌ Errore durante la creazione del ticket."); 
-            } finally {
+                // Lo sblocchiamo SOLO se c'è stato un errore di connessione
                 btnTicket.innerText = "🎟️ Crea Ticket Supporto";
                 btnTicket.disabled = false;
             }
