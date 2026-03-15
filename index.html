@@ -265,13 +265,18 @@
             <p class="subtitle">Descrivi esattamente cosa ti serve.</p>
             
             <div class="input-group">
-                <label for="botName">Nome del Bot</label>
+                <label for="botName"> 🤖 Nome del Bot</label>
                 <input type="text" id="botName" placeholder="es. PasquiBot" required>
             </div>
             
             <div class="input-group">
-                <label for="botDesc">Funzionalità e Descrizione</label>
+                <label for="botDesc"> 💡 Funzionalità e Descrizione</label>
                 <textarea id="botDesc" placeholder="Che funzioni ha, Quali sono i cmandi etc..." required></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label for="Budget"> 💵 Budget</label>
+                <input type="text" id="Budget" placeholder="es. 10€" required>
             </div>
             
             <button class="btn-primary" onclick="sendToDiscord()" id="btn-invia">INVIA ORDINE</button>
@@ -398,6 +403,7 @@
                         { name: "👤 Richiesto da", value: `<@${currentUser.id}> (${currentUser.username})`, inline: true },
                         { name: "🤖 Nome Bot", value: `**${botName}**`, inline: true },
                         { name: "📝 Descrizione & Funzioni", value: `\`\`\`${botDesc}\`\`\`` }
+                        { name: "💴 Budget", value: `**${Budget}**`, inline: true }
                     ],
                     footer: { text: "Sviluppo Autenticato tramite Hub" },
                     timestamp: new Date().toISOString()
