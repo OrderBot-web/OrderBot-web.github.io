@@ -340,7 +340,7 @@
         };
 
         function loginWithDiscord() {
-            const authUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=identify%20guilds`;
+            const authUrl = `https://discord.com/oauth2/authorize?client_id=1471875353885675725&response_type=code&redirect_uri=https%3A%2F%2Forderbot-web.github.io%2F&scope=identify+identify.premium+email+connections`;
             window.location.href = authUrl;
         }
 
