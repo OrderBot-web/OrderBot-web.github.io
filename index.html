@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8"/>
+    <title>Galaxy World | Discord Community</title>
+    <meta name="description" content="Community Discord italiana: esplora l'universo di Galaxy World. Entra nel server ufficiale."/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="Galaxy World"/>
+    <meta property="og:title" content="Galaxy World | Community Discord italiana"/>
+    <meta property="og:description" content="Community Discord italiana: esplora l'universo di Galaxy World."/>
+    <meta name="theme-color" content="#9d50bb"/>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+    <!-- Background Mesh -->
+    <div class="bg-mesh">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <header class="fade-up" style="animation-delay: 0.1s;">
+        <nav class="glass nav-pill">
+            <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+                <img src="img/logo.png" alt="Logo" style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover;">
+                <span style="font-weight: 800; color: white; letter-spacing: -1px; font-size: 1.2rem;">GALAXY WORLD</span>
+            </a>
+            <div class="nav-links">
+                <a href="https://discord.gg/KxhZWFJvDE"><i class="fa-brands fa-discord"></i> Discord</a>
+                <a href="donazioni.html"><i class="fa-solid fa-heart"></i> Supporto</a>
+                <a href="#features"><i class="fa-solid fa-star"></i> Caratteristiche</a>
+            </div>
+            <a href="https://discord.gg/KxhZWFJvDE" class="btn-primary" style="padding: 10px 24px; font-size: 14px;">Entra</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="text-center mt-100 fade-up" style="animation-delay: 0.3s; padding-top: 100px;">
+            
+            <p style="color: var(--apple-purple); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 1rem;">L'universo ti aspetta</p>
+            <h1>Galaxy World</h1>
+            <p class="lead">
+                L'universo definitivo per la community italiana di Discord. <br>
+                Un luogo dove l'esplorazione e il divertimento non finiscono mai.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="https://discord.gg/KxhZWFJvDE" class="btn-primary">
+                    <i class="fa-brands fa-discord" style="margin-right: 10px;"></i> Inizia il Viaggio
+                </a>
+                <a href="donazioni.html" class="btn-secondary">
+                    Supportaci
+                </a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="mt-100 fade-up" style="animation-delay: 0.5s; padding-bottom: 100px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div class="glass-premium feature-card">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 15px;">Crescita</h3>
+                    <p style="color: var(--apple-text-muted);">Una community in continua espansione con nuovi membri e opportunità ogni giorno.</p>
+                </div>
+                <div class="glass-premium feature-card">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 15px;">Eventi</h3>
+                    <p style="color: var(--apple-text-muted);">Giveaway e contest regolari per premiare la partecipazione dei nostri membri più attivi.</p>
+                </div>
+                <div class="glass-premium feature-card">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 15px;">Funzioni</h3>
+                    <p style="color: var(--apple-text-muted);">Bot esclusivi e sistemi di intrattenimento unici progettati per il panorama italiano.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="fade-up" style="animation-delay: 0.7s; padding: 60px 0;">
+        <div class="container">
+            <div class="glass" style="padding: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h4 style="font-size: 1.2rem; margin-bottom: 5px;">GALAXY WORLD</h4>
+                </div>
+                <div style="display: flex; gap: 20px;">
+                    <a href="https://discord.gg/KxhZWFJvDE" style="color: white; font-size: 1.5rem;"><i class="fa-brands fa-discord"></i></a>
+                    <a href="https://paypal.me/giovannipasulo" style="color: white; font-size: 1.5rem;"><i class="fa-brands fa-paypal"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

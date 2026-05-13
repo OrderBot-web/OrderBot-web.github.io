@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap');
+
+:root {
+    --apple-purple: #9d50bb;
+    --apple-purple-vibrant: #6e48aa;
+    --apple-purple-dark: #2d1b4e;
+    --apple-bg: #020205;
+    --apple-glass: rgba(18, 18, 23, 0.7);
+    --apple-glass-border: rgba(255, 255, 255, 0.1);
+    --apple-text-main: #ffffff;
+    --apple-text-muted: #a1a1aa;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--apple-bg);
+    color: var(--apple-text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* Dynamic Mesh Background */
+.bg-mesh {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    background: radial-gradient(at 0% 0%, #1a1033 0, transparent 50%), 
+                radial-gradient(at 50% 0%, #2d1b4e 0, transparent 50%), 
+                radial-gradient(at 100% 0%, #1a1033 0, transparent 50%);
+}
+
+.bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    animation: liquid 20s infinite alternate ease-in-out;
+}
+
+.circle-1 {
+    width: 80vw;
+    height: 80vw;
+    background: radial-gradient(circle, #6e48aa 0%, transparent 70%);
+    top: -10%;
+    left: -20%;
+}
+
+.circle-2 {
+    width: 70vw;
+    height: 70vw;
+    background: radial-gradient(circle, #2d1b4e 0%, transparent 70%);
+    bottom: -20%;
+    right: -10%;
+    animation-delay: -5s;
+}
+
+.circle-3 {
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, #9d50bb 0%, transparent 70%);
+    top: 20%;
+    right: 20%;
+    animation-delay: -10s;
+}
+
+@keyframes liquid {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    33% { transform: translate(5%, 10%) rotate(10deg) scale(1.1); }
+    66% { transform: translate(-5%, 5%) rotate(-10deg) scale(0.9); }
+    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+
+/* Glassmorphism */
+.glass {
+    background: var(--apple-glass);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid var(--apple-glass-border);
+    border-radius: 100px; /* Super rounded */
+}
+
+.glass-premium {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    border-radius: 40px; /* Super rounded */
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--apple-purple), var(--apple-purple-vibrant));
+    color: white;
+    padding: 16px 36px;
+    border-radius: 100px; /* Fully rounded */
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: none;
+    box-shadow: 0 10px 25px rgba(157, 80, 187, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(157, 80, 187, 0.5);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    padding: 16px 36px;
+    border-radius: 100px; /* Fully rounded */
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Animations */
+.fade-up {
+    animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+header {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto; /* Shrink to fit content */
+    max-width: 95%;
+    z-index: 1000;
+}
+
+.nav-pill {
+    padding: 8px 12px 8px 32px; /* Adjusted for better symmetry with the button */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.nav-links a {
+    color: var(--apple-text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 15px;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--apple-text-main);
+}
+
+.nav-links a i {
+    margin-right: 6px;
+    opacity: 0.8;
+}
+
+/* Typography */
+h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+p.lead {
+    font-size: 1.25rem;
+    color: var(--apple-text-muted);
+    max-width: 600px;
+    margin: 0 auto 40px;
+    font-weight: 400;
+}
+
+/* Cards */
+.feature-card {
+    padding: 40px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, rgba(157, 80, 187, 0.2), rgba(110, 72, 170, 0.2));
+    border-radius: 22px; /* Extra rounded icon box */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    color: #9d50bb;
+    font-size: 24px;
+}
+
+/* Utilities */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.text-center { text-align: center; }
+.mt-100 { margin-top: 100px; }
+.mb-20 { margin-bottom: 20px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-links { display: none; }
+    h1 { font-size: 4rem; }
+}
