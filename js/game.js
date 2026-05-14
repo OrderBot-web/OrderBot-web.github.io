@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Full Solar System Version
+ * Building & Economy Update
  */
 
 class SpaceGame {
@@ -23,13 +23,13 @@ class SpaceGame {
         this.cargo = [];
         this.maxCargo = 6;
         this.activeCrises = [];
+        this.outposts = []; // Player-built cities
 
         this.camera = { x: 0, y: 0, zoom: 0.6 };
         this.ship = { x: 450, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 14, mass: 1, color: '#fff' };
 
         this.sun = { x: 0, y: 0, size: 110, color: '#FFD700' };
         
-        // ALL PLANETS & MAJOR MOONS
         this.planets = [
             { id: 'mercurio', name: 'Mercurio', dist: 220, size: 12, color: '#95a5a6', speed: 0.015, angle: Math.random()*6, resources: ['Calore'], demands: ['Ghiaccio'], level: 1 },
             { id: 'venere', name: 'Venere', dist: 320, size: 22, color: '#e67e22', speed: 0.008, angle: Math.random()*6, resources: ['Acido'], demands: ['Filtri'], level: 1 },
@@ -37,21 +37,16 @@ class SpaceGame {
             { id: 'luna', name: 'Luna', parent: 'terra', dist: 80, size: 10, color: '#bdc3c7', speed: 0.03, angle: 0, resources: ['Metalli'], demands: ['Cibo'], level: 1 },
             { id: 'marte', name: 'Marte', dist: 650, size: 20, color: '#ff4b2b', speed: 0.0035, angle: 1.2, resources: ['Minerali'], demands: ['Acqua'], level: 1 },
             { id: 'phobos', name: 'Phobos', parent: 'marte', dist: 45, size: 5, color: '#7f8c8d', speed: 0.08, angle: 0, resources: ['Carburante'], demands: ['Minerali'], level: 1 },
-            
-            // Outer Space
             { id: 'giove', name: 'Giove', dist: 1300, size: 65, color: '#f39c12', speed: 0.0012, angle: 2.5, resources: ['Idrogeno'], demands: ['Elettronica'], level: 1 },
             { id: 'europa', name: 'Europa', parent: 'giove', dist: 120, size: 12, color: '#81ecec', speed: 0.02, angle: 0.5, resources: ['Ghiaccio'], demands: ['Energia'], level: 1 },
             { id: 'io', name: 'Io', parent: 'giove', dist: 90, size: 11, color: '#f1c40f', speed: 0.04, angle: 1.8, resources: ['Zolfo'], demands: ['Sonda'], level: 1 },
-            
             { id: 'saturno', name: 'Saturno', dist: 1900, size: 55, color: '#f1c40f', speed: 0.0008, angle: 4, resources: ['Gas'], demands: ['Filtri'], level: 1, rings: true },
             { id: 'titano', name: 'Titano', parent: 'saturno', dist: 140, size: 15, color: '#d35400', speed: 0.012, angle: 0.8, resources: ['Metano'], demands: ['Medicina'], level: 1 },
             { id: 'encelado', name: 'Encelado', parent: 'saturno', dist: 100, size: 8, color: '#ecf0f1', speed: 0.025, angle: 3.1, resources: ['Acqua'], demands: ['Energia'], level: 1 },
-            
             { id: 'urano', name: 'Urano', dist: 2600, size: 35, color: '#a29bfe', speed: 0.0005, angle: 5, resources: ['Diamanti'], demands: ['Calore'], level: 1 },
             { id: 'nettuno', name: 'Nettuno', dist: 3200, size: 34, color: '#0984e3', speed: 0.0003, angle: 1, resources: ['Energia'], demands: ['Metano'], level: 1 }
         ];
 
-        // Increased Asteroid Belt
         this.asteroids = [];
         for(let i=0; i<this.asteroidCount; i++) {
             let dist = 850 + Math.random() * 250;
@@ -68,15 +63,47 @@ class SpaceGame {
             this.canvas.width = this.width; this.canvas.height = this.height;
         });
         this.keys = {};
-        window.addEventListener('keydown', (e) => this.keys[e.code] = true);
+        window.addEventListener('keydown', (e) => {
+            this.keys[e.code] = true;
+            if(e.code === 'KeyB') this.buildOutpost();
+        });
         window.addEventListener('keyup', (e) => this.keys[e.code] = false);
 
         this.crisisTimer = setInterval(() => { if(this.running) this.spawnCrisis(); }, 12000);
         document.getElementById('submit-score-btn').addEventListener('click', () => this.submitScore());
     }
 
+    buildOutpost() {
+        if(!this.running || this.credits < 2000) return;
+        
+        // Check if near any existing planet
+        let nearPlanet = this.planets.find(p => {
+            let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
+            return d < p.size + 100;
+        });
+
+        if(!nearPlanet) {
+            // Build a space station in open space
+            this.outposts.push({
+                id: 'outpost_' + Date.now(),
+                name: 'STAZIONE ' + (this.outposts.length + 1),
+                x: this.ship.x,
+                y: this.ship.y,
+                size: 15,
+                color: '#9b59b6',
+                resources: ['Ricerca'],
+                demands: ['Energia'],
+                level: 1
+            });
+            this.credits -= 2000;
+            alert("STAZIONE SPAZIALE COSTRUITA!");
+        } else {
+            alert("TROPPO VICINO A UN PIANETA PER COSTRUIRE!");
+        }
+    }
+
     spawnCrisis() {
-        const candidates = this.planets.filter(p => !p.parent); // Main planets mostly
+        const candidates = [...this.planets, ...this.outposts].filter(p => !p.parent);
         const p = candidates[Math.floor(Math.random() * candidates.length)];
         if(this.activeCrises.find(c => c.planet === p.id)) return;
         this.activeCrises.push({ planet: p.id, resource: p.demands[0], timer: 60, maxTime: 60 });
@@ -110,12 +137,19 @@ class SpaceGame {
         this.ship.vx *= this.friction;
         this.ship.vy *= this.friction;
 
+        // Update Planets
         this.planets.forEach(p => {
             p.angle += p.speed;
             let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
             p.x = parent.x + Math.cos(p.angle) * p.dist;
             p.y = parent.y + Math.sin(p.angle) * p.dist;
 
+            let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
+            if(d < p.size + 12) this.dock(p);
+        });
+
+        // Update Outposts (Static in space for now)
+        this.outposts.forEach(p => {
             let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
             if(d < p.size + 12) this.dock(p);
         });
@@ -187,7 +221,6 @@ class SpaceGame {
 
         // Planets
         this.planets.forEach(p => {
-            // Rings for Saturn
             if(p.rings) {
                 this.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
                 this.ctx.lineWidth = 10;
@@ -195,18 +228,17 @@ class SpaceGame {
                 this.ctx.ellipse(p.x, p.y, p.size * 2, p.size * 0.8, p.angle, 0, Math.PI*2);
                 this.ctx.stroke();
             }
-
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            this.ctx.fillStyle = p.color;
-            this.ctx.fill();
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = 'bold 16px Outfit';
-            this.ctx.textAlign = 'center';
+            this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
+            this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 16px Outfit'; this.ctx.textAlign = 'center';
             this.ctx.fillText(p.name.toUpperCase(), p.x, p.y - p.size - 12);
-            this.ctx.font = '10px Inter';
-            this.ctx.fillStyle = 'rgba(255,255,255,0.6)';
-            this.ctx.fillText(`LV. ${p.level} | ${p.resources[0]}`, p.x, p.y + p.size + 15);
+        });
+
+        // Outposts
+        this.outposts.forEach(p => {
+            this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
+            this.ctx.strokeStyle = 'white'; this.ctx.lineWidth = 2; this.ctx.stroke();
+            this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 12px Outfit'; this.ctx.textAlign = 'center';
+            this.ctx.fillText(p.name, p.x, p.y - p.size - 8);
         });
 
         // Ship
@@ -228,9 +260,9 @@ class SpaceGame {
         this.ctx.fillStyle = 'white';
         this.ctx.font = 'bold 24px Outfit';
         this.ctx.fillText(`$ ${this.credits}`, 40, 60);
-        this.ctx.font = '14px Inter';
-        this.ctx.fillText(`STIVA: ${this.cargo.join(', ') || 'VUOTA'}`, 40, 90);
-        this.ctx.fillText(`SCORE: ${this.score}`, 40, 115);
+        this.ctx.font = '12px Inter';
+        this.ctx.fillText(`PREMI 'B' PER COSTRUIRE CITTÀ (COSTO: 2000)`, 40, 85);
+        this.ctx.fillText(`STIVA: ${this.cargo.join(', ') || 'VUOTA'}`, 40, 105);
 
         this.activeCrises.forEach((c, idx) => {
             this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
@@ -263,7 +295,7 @@ class SpaceGame {
     }
 }
 
-// Secret Trigger (Invisible Overlay)
+// Secret Trigger
 let logoClicks = 0;
 document.getElementById('secret-trigger').addEventListener('click', (e) => {
     e.preventDefault(); e.stopPropagation();
