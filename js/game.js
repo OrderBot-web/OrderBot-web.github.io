@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Mobile Support & Smart AI Pilots
+ * Advanced Navigation System Update
  */
 
 class SpaceGame {
@@ -71,9 +71,7 @@ class SpaceGame {
         });
         window.addEventListener('keyup', (e) => this.keys[e.code] = false);
 
-        // Mobile Controls
         this.isTouching = false;
-        this.touchPos = { x: 0, y: 0 };
         this.canvas.addEventListener('touchstart', (e) => { this.isTouching = true; this.handleTouch(e); });
         this.canvas.addEventListener('touchmove', (e) => { this.handleTouch(e); });
         this.canvas.addEventListener('touchend', () => { this.isTouching = false; });
@@ -82,11 +80,7 @@ class SpaceGame {
         document.getElementById('submit-score-btn').addEventListener('click', () => this.submitScore());
     }
 
-    handleTouch(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        this.touchPos = { x: touch.clientX, y: touch.clientY };
-    }
+    handleTouch(e) { e.preventDefault(); const touch = e.touches[0]; this.touchPos = { x: touch.clientX, y: touch.clientY }; }
 
     buildOutpost() {
         if(!this.running || this.credits < 2000) return;
@@ -100,10 +94,7 @@ class SpaceGame {
     hirePilot() {
         if(!this.running || this.credits < 5000) return;
         const target = this.planets[Math.floor(Math.random() * this.planets.length)];
-        this.fleet.push({
-            x: 0, y: 0, targetId: target.id, progress: 0, speed: 0.005,
-            name: "PILOTA " + (this.fleet.length + 1)
-        });
+        this.fleet.push({ x: 0, y: 0, targetId: target.id, progress: 0, speed: 0.005, name: "PILOTA " + (this.fleet.length + 1) });
         this.credits -= 5000;
     }
 
@@ -122,7 +113,6 @@ class SpaceGame {
         this.ship.mass = 1 + (this.cargo.length * 0.4);
         let accel = this.baseAccel / this.ship.mass;
 
-        // Desktop Controls
         if (this.keys['ArrowUp'] || this.keys['KeyW']) {
             this.ship.vx += Math.cos(this.ship.angle) * accel;
             this.ship.vy += Math.sin(this.ship.angle) * accel;
@@ -130,20 +120,14 @@ class SpaceGame {
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.07 / Math.sqrt(this.ship.mass);
         if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.07 / Math.sqrt(this.ship.mass);
 
-        // Mobile Logic
         if (this.isTouching) {
-            // Calculate angle towards touch point
             const worldTouchX = (this.touchPos.x - this.camera.x) / this.camera.zoom;
             const worldTouchY = (this.touchPos.y - this.camera.y) / this.camera.zoom;
             const targetAngle = Math.atan2(worldTouchY - this.ship.y, worldTouchX - this.ship.x);
-            
-            // Smoothly rotate towards target
             let angleDiff = targetAngle - this.ship.angle;
             while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
             while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
             this.ship.angle += angleDiff * 0.1;
-            
-            // Accelerate
             this.ship.vx += Math.cos(this.ship.angle) * accel;
             this.ship.vy += Math.sin(this.ship.angle) * accel;
         }
@@ -159,59 +143,30 @@ class SpaceGame {
         this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
         this.ship.vx *= this.friction; this.ship.vy *= this.friction;
 
-        // Planets & Outposts
         [...this.planets, ...this.outposts].forEach(p => {
-            if(p.speed) { 
-                p.angle += p.speed;
-                let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
-                p.x = parent.x + Math.cos(p.angle) * p.dist;
-                p.y = parent.y + Math.sin(p.angle) * p.dist;
-            }
+            if(p.speed) { p.angle += p.speed; let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun; p.x = parent.x + Math.cos(p.angle) * p.dist; p.y = parent.y + Math.sin(p.angle) * p.dist; }
             let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
             if(d < p.size + 12) this.dock(p);
         });
 
-        // Asteroids
         this.asteroids.forEach(a => {
             a.angle += a.speed; a.x = Math.cos(a.angle) * a.dist; a.y = Math.sin(a.angle) * a.dist;
             let d = Math.sqrt((a.x - this.ship.x)**2 + (a.y - this.ship.y)**2);
             if(d < a.size + 5) this.hitAsteroid();
         });
 
-        // Fleet Automation (Smart Navigation)
-        this.fleet.forEach((pilot, idx) => {
+        this.fleet.forEach(pilot => {
             pilot.progress += pilot.speed;
             const target = this.planets.find(p => p.id === pilot.targetId);
             const terra = this.planets.find(p => p.id === 'terra');
-            
-            // Safe path: Move along an arc to avoid the Sun
-            const midDist = (terra.dist + target.dist) / 2 + 100; // Curve outwards
+            const midDist = (terra.dist + target.dist) / 2 + 150;
             const midAngle = (terra.angle + target.angle) / 2;
-            
-            if (pilot.progress < 0.5) {
-                // To Midpoint
-                let p = pilot.progress * 2;
-                pilot.x = terra.x + (Math.cos(midAngle) * midDist - terra.x) * p;
-                pilot.y = terra.y + (Math.sin(midAngle) * midDist - terra.y) * p;
-            } else {
-                // To Target
-                let p = (pilot.progress - 0.5) * 2;
-                pilot.x = (Math.cos(midAngle) * midDist) + (target.x - (Math.cos(midAngle) * midDist)) * p;
-                pilot.y = (Math.sin(midAngle) * midDist) + (target.y - (Math.sin(midAngle) * midDist)) * p;
-            }
-
-            if(pilot.progress >= 1) {
-                this.credits += 1500; this.score += 1000;
-                pilot.progress = 0;
-                pilot.targetId = this.planets[Math.floor(Math.random() * this.planets.length)].id;
-            }
+            if (pilot.progress < 0.5) { let p = pilot.progress * 2; pilot.x = terra.x + (Math.cos(midAngle) * midDist - terra.x) * p; pilot.y = terra.y + (Math.sin(midAngle) * midDist - terra.y) * p; }
+            else { let p = (pilot.progress - 0.5) * 2; pilot.x = (Math.cos(midAngle) * midDist) + (target.x - (Math.cos(midAngle) * midDist)) * p; pilot.y = (Math.sin(midAngle) * midDist) + (target.y - (Math.sin(midAngle) * midDist)) * p; }
+            if(pilot.progress >= 1) { this.credits += 1500; this.score += 1000; pilot.progress = 0; pilot.targetId = this.planets[Math.floor(Math.random() * this.planets.length)].id; }
         });
 
-        this.activeCrises.forEach(c => {
-            c.timer -= 1/60;
-            if(c.timer <= 0) this.gameOver(`COLLASSO: ${c.planet.toUpperCase()} È MORTA`);
-        });
-
+        this.activeCrises.forEach(c => { c.timer -= 1/60; if(c.timer <= 0) this.gameOver(`COLLASSO: ${c.planet.toUpperCase()} È MORTA`); });
         this.camera.x += (-this.ship.x * this.camera.zoom + this.width/2 - this.camera.x) * 0.08;
         this.camera.y += (-this.ship.y * this.camera.zoom + this.height/2 - this.camera.y) * 0.08;
     }
@@ -223,67 +178,87 @@ class SpaceGame {
             this.cargo.splice(resIdx, 1);
             let reward = 600;
             let cIdx = this.activeCrises.findIndex(c => c.planet === planet.id);
-            if(cIdx !== -1) {
-                reward += Math.floor((1 - this.activeCrises[cIdx].timer / 60) * 1500);
-                this.activeCrises.splice(cIdx, 1);
-                planet.level++;
-            }
+            if(cIdx !== -1) { reward += Math.floor((1 - this.activeCrises[cIdx].timer / 60) * 1500); this.activeCrises.splice(cIdx, 1); planet.level++; }
             this.credits += reward; this.score += reward;
-        } else if(this.cargo.length < this.maxCargo && this.credits >= 150) {
-            this.cargo.push(planet.resources[0]);
-            this.credits -= 150;
-        }
-        this.ship.vx *= -0.3; this.ship.vy *= -0.3;
-        this.ship.x += this.ship.vx * 8; this.ship.y += this.ship.vy * 8;
+        } else if(this.cargo.length < this.maxCargo && this.credits >= 150) { this.cargo.push(planet.resources[0]); this.credits -= 150; }
+        this.ship.vx *= -0.3; this.ship.vy *= -0.3; this.ship.x += this.ship.vx * 8; this.ship.y += this.ship.vy * 8;
     }
 
-    hitAsteroid() {
-        if(this.cargo.length > 0 && Math.random() > 0.8) this.cargo.pop();
-        this.ship.vx *= 0.6; this.ship.vy *= 0.6;
+    hitAsteroid() { if(this.cargo.length > 0 && Math.random() > 0.8) this.cargo.pop(); this.ship.vx *= 0.6; this.ship.vy *= 0.6; }
+
+    drawNavigation() {
+        const targetCrisis = this.activeCrises[0];
+        if(!targetCrisis) return;
+        const target = this.planets.find(p => p.id === targetCrisis.planet) || this.outposts.find(o => o.id === targetCrisis.planet);
+        if(!target) return;
+
+        this.ctx.beginPath();
+        this.ctx.setLineDash([5, 10]);
+        this.ctx.strokeStyle = 'rgba(155, 89, 182, 0.4)';
+        this.ctx.lineWidth = 2;
+
+        // Simulate a curved path to the target
+        let curX = this.ship.x;
+        let curY = this.ship.y;
+        this.ctx.moveTo(curX, curY);
+
+        for(let i=1; i<=10; i++) {
+            let t = i / 10;
+            // Bezier-like curve that bends away from the Sun (0,0)
+            let directX = curX + (target.x - curX) * t;
+            let directY = curY + (target.y - curY) * t;
+            
+            // Add a "gravity repulsion" effect for the visual line
+            let distToSun = Math.sqrt(directX**2 + directY**2);
+            let push = (300 / distToSun) * Math.sin(t * Math.PI);
+            let finalX = directX + (directX / distToSun) * push * 100;
+            let finalY = directY + (directY / distToSun) * push * 100;
+            
+            this.ctx.lineTo(finalX, finalY);
+        }
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+        
+        // Target Arrow
+        let angle = Math.atan2(target.y - this.ship.y, target.x - this.ship.x);
+        this.ctx.save();
+        this.ctx.translate(this.ship.x + Math.cos(angle) * 40, this.ship.y + Math.sin(angle) * 40);
+        this.ctx.rotate(angle);
+        this.ctx.fillStyle = '#9b59b6';
+        this.ctx.beginPath();
+        this.ctx.moveTo(10, 0);
+        this.ctx.lineTo(-5, 5);
+        this.ctx.lineTo(-5, -5);
+        this.ctx.fill();
+        this.ctx.restore();
     }
 
     draw() {
         this.ctx.fillStyle = '#020205';
         this.ctx.fillRect(0, 0, this.width, this.height);
-
         this.ctx.save();
         this.ctx.translate(this.camera.x, this.camera.y);
         this.ctx.scale(this.camera.zoom, this.camera.zoom);
 
-        // Sun
-        this.ctx.beginPath(); this.ctx.arc(0, 0, this.sun.size, 0, Math.PI * 2); this.ctx.fillStyle = this.sun.color; this.ctx.fill();
+        this.drawNavigation(); // Draw the dynamic path
 
-        // Planets
+        this.ctx.beginPath(); this.ctx.arc(0, 0, this.sun.size, 0, Math.PI * 2); this.ctx.fillStyle = this.sun.color; this.ctx.fill();
         this.planets.forEach(p => {
             if(p.rings) { this.ctx.strokeStyle = 'rgba(255,255,255,0.1)'; this.ctx.lineWidth = 10; this.ctx.beginPath(); this.ctx.ellipse(p.x, p.y, p.size * 2, p.size * 0.8, p.angle, 0, Math.PI*2); this.ctx.stroke(); }
             this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
         });
-
-        // Fleet (Pilots)
-        this.fleet.forEach(p => {
-            this.ctx.fillStyle = '#2ecc71';
-            this.ctx.fillRect(p.x - 5, p.y - 5, 10, 10);
-        });
-
-        // Ship
+        this.outposts.forEach(p => { this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill(); this.ctx.strokeStyle = 'white'; this.ctx.lineWidth = 2; this.ctx.stroke(); });
+        this.fleet.forEach(p => { this.ctx.fillStyle = '#2ecc71'; this.ctx.fillRect(p.x - 5, p.y - 5, 10, 10); });
         this.ctx.save(); this.ctx.translate(this.ship.x, this.ship.y); this.ctx.rotate(this.ship.angle);
         this.ctx.beginPath(); this.ctx.moveTo(this.ship.size, 0); this.ctx.lineTo(-this.ship.size/2, this.ship.size/2); this.ctx.lineTo(-this.ship.size/2, -this.ship.size/2); this.ctx.closePath();
         this.ctx.fillStyle = 'white'; this.ctx.fill(); this.ctx.restore();
-
         this.ctx.restore();
 
-        // HUD
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 22px Outfit';
-        this.ctx.fillText(`$ ${this.credits}`, 30, 50);
-        this.ctx.font = '10px Inter';
-        this.ctx.fillText(`TOCCA PER VOLARE | B: COSTRUISCI | H: PILOTA`, 30, 75);
+        this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 22px Outfit'; this.ctx.fillText(`$ ${this.credits}`, 30, 50);
     }
 
     gameOver(reason) { this.running = false; document.getElementById('game-modal').classList.add('active'); document.querySelector('#game-modal h2').innerText = reason; }
-
     async submitScore() { location.reload(); }
-
     loop() { if (!this.running) return; this.update(); this.draw(); requestAnimationFrame(() => this.loop()); }
 }
 
