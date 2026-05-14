@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Earth Launch Edition
+ * Cinematic Earth Launch Edition
  */
 
 class SpaceGame {
@@ -26,6 +26,7 @@ class SpaceGame {
         this.maxCargo = 8;
         this.activeCrises = [];
         this.outposts = []; 
+        this.particles = [];
 
         this.camera = { x: 0, y: 0, zoom: 0.8 };
         
@@ -41,12 +42,14 @@ class SpaceGame {
             { id: 'nettuno', name: 'NETTUNO', dist: 1400, size: 14, color: '#0984e3', speed: 0.0003, res: 'ENERGIA', req: 'DIAMANTI', spec: 'ABISSO BLU' }
         ];
 
-        // START AT EARTH
+        // INITIAL POSITION
         const terra = this.planets.find(p => p.id === 'terra');
         this.ship = { x: terra.dist, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 5 };
         
         this.sun = { x: 0, y: 0, size: 25, color: '#FFD700' };
-        this.launchTimer = 60; // Launch animation
+        
+        this.launchState = 'COUNTDOWN'; // COUNTDOWN -> BOOST -> PLAY
+        this.launchTimer = 180; // 3 seconds at 60fps
 
         this.init();
     }
@@ -90,11 +93,21 @@ class SpaceGame {
 
     update() {
         if (!this.running) return;
-        
-        if(this.launchTimer > 0) {
+
+        // LAUNCH ANIMATION LOGIC
+        if (this.launchState === 'COUNTDOWN') {
             this.launchTimer--;
-            this.ship.vy = -2; // Upwards boost
+            const terra = this.planets.find(p => p.id === 'terra');
+            this.ship.x = terra.x; this.ship.y = terra.y; // Stay locked to Terra
+            if (this.launchTimer <= 0) { this.launchState = 'BOOST'; this.launchTimer = 60; }
+            return;
+        } else if (this.launchState === 'BOOST') {
+            this.launchTimer--;
+            this.ship.vy = -3; // Launch velocity
             this.ship.angle = -Math.PI/2;
+            // Particles
+            if(Math.random() > 0.5) this.particles.push({ x: this.ship.x, y: this.ship.y, vx: (Math.random()-0.5), vy: 2, life: 30, color: '#ff4b2b' });
+            if (this.launchTimer <= 0) { this.launchState = 'PLAY'; }
         }
 
         this.ship.mass = 1 + (this.cargo.length * 0.2);
@@ -122,6 +135,9 @@ class SpaceGame {
         this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
         this.ship.vx *= this.friction; this.ship.vy *= this.friction;
 
+        // Particles Update
+        this.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if(p.life <= 0) this.particles.splice(i, 1); });
+
         // Update Planets
         this.planets.forEach(p => {
             p.angle = (p.angle || 0) + p.speed;
@@ -129,17 +145,15 @@ class SpaceGame {
             p.x = parent.x + Math.cos(p.angle) * p.dist;
             p.y = parent.y + Math.sin(p.angle) * p.dist;
             let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
-            if(d < p.size + 6) this.dock(p);
+            if(d < p.size + 6 && this.launchState === 'PLAY') this.dock(p);
         });
 
         this.outposts.forEach(p => {
             let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
-            if(d < p.size + 6) this.dock(p);
+            if(d < p.size + 6 && this.launchState === 'PLAY') this.dock(p);
         });
 
         this.activeCrises.forEach(c => { c.timer -= 1/60; if(c.timer <= 0) this.gameOver(); });
-        
-        // Fix Camera Centering
         this.camera.x = -this.ship.x * this.camera.zoom + this.buffer.width/2;
         this.camera.y = -this.ship.y * this.camera.zoom + this.buffer.height/2;
     }
@@ -158,32 +172,11 @@ class SpaceGame {
         this.ship.vx *= -0.2; this.ship.vy *= -0.2;
     }
 
-    drawNavigation() {
-        const targetCrisis = this.activeCrises[0];
-        if(!targetCrisis) return;
-        const target = this.planets.find(p => p.id === targetCrisis.planet) || this.outposts.find(o => o.id === targetCrisis.planet);
-        if(!target) return;
-        this.bctx.beginPath(); this.bctx.setLineDash([2, 4]); this.bctx.strokeStyle = 'rgba(155, 89, 182, 0.4)'; this.bctx.lineWidth = 1;
-        let curX = this.ship.x; let curY = this.ship.y; this.bctx.moveTo(curX, curY);
-        for(let i=1; i<=8; i++) {
-            let t = i / 8; let dx = curX + (target.x - curX) * t; let dy = curY + (target.y - curY) * t;
-            let d = Math.sqrt(dx**2 + dy**2); let push = (200 / d) * Math.sin(t * Math.PI);
-            this.bctx.lineTo(dx + (dx/d)*push*50, dy + (dy/d)*push*50);
-        }
-        this.bctx.stroke(); this.bctx.setLineDash([]);
-    }
-
     draw() {
         this.bctx.fillStyle = '#020205'; this.bctx.fillRect(0, 0, this.buffer.width, this.buffer.height);
         this.bctx.save();
         this.bctx.translate(this.camera.x, this.camera.y);
         this.bctx.scale(this.camera.zoom, this.camera.zoom);
-
-        // Map Border
-        this.bctx.strokeStyle = 'rgba(155, 89, 182, 0.2)'; this.bctx.lineWidth = 2;
-        this.bctx.beginPath(); this.bctx.arc(0, 0, this.mapLimit, 0, Math.PI * 2); this.bctx.stroke();
-
-        this.drawNavigation();
 
         // Sun
         this.bctx.fillStyle = this.sun.color; this.bctx.fillRect(-this.sun.size, -this.sun.size, this.sun.size*2, this.sun.size*2);
@@ -195,6 +188,9 @@ class SpaceGame {
             this.bctx.fillText(p.name, p.x, p.y - p.size - 4);
         });
 
+        // Particles
+        this.particles.forEach(p => { this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x, p.y, 2, 2); });
+
         // Cities
         this.outposts.forEach(p => {
             this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
@@ -205,8 +201,13 @@ class SpaceGame {
         this.bctx.save(); this.bctx.translate(this.ship.x, this.ship.y); this.bctx.rotate(this.ship.angle);
         this.bctx.fillStyle = 'white'; this.bctx.fillRect(-3, -2, 6, 4); this.bctx.restore();
         
-        if(this.launchTimer > 0) {
-            this.bctx.fillStyle = 'white'; this.bctx.font = 'bold 8px monospace';
+        // Launch UI
+        if(this.launchState === 'COUNTDOWN') {
+            this.bctx.fillStyle = 'white'; this.bctx.font = 'bold 12px monospace';
+            const count = Math.ceil(this.launchTimer / 60);
+            this.bctx.fillText(count, this.ship.x, this.ship.y - 20);
+        } else if(this.launchState === 'BOOST') {
+            this.bctx.fillStyle = '#ff4b2b'; this.bctx.font = 'bold 10px monospace';
             this.bctx.fillText("LANCIO!", this.ship.x, this.ship.y - 20);
         }
 
@@ -218,7 +219,6 @@ class SpaceGame {
         // HUD
         this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 18px monospace';
         this.ctx.fillText(`CASH: $${this.credits} | SCORE: ${this.score}`, 20, 40);
-        this.activeCrises.forEach((c, idx) => { this.ctx.fillStyle = '#f00'; this.ctx.fillRect(this.width - 150, 20 + idx*30, (c.timer/45)*130, 15); });
     }
 
     gameOver() { this.running = false; location.reload(); }
