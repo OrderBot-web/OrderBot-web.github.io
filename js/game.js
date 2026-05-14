@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Pixel Edition + Map Border
+ * True Pixel Edition with Pixelated Names
  */
 
 class SpaceGame {
@@ -8,9 +8,8 @@ class SpaceGame {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         
-        this.pixelScale = 4;
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
+        // Lower resolution for more blocky "Pixel Art" look
+        this.pixelScale = 4; 
         this.buffer = document.createElement('canvas');
         this.bctx = this.buffer.getContext('2d');
         
@@ -19,11 +18,11 @@ class SpaceGame {
         this.G = 0.8; 
         this.friction = 0.992;
         this.baseAccel = 0.4;
-        this.mapLimit = 2500; // Border at this distance
+        this.mapLimit = 2500; 
 
         this.running = false;
         this.score = 0;
-        this.credits = 2500; 
+        this.credits = 3000; 
         this.cargo = [];
         this.maxCargo = 6;
         this.activeCrises = [];
@@ -31,20 +30,20 @@ class SpaceGame {
         this.fleet = []; 
 
         this.camera = { x: 0, y: 0, zoom: 0.8 };
-        this.ship = { x: 100, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 4, mass: 1 };
+        this.ship = { x: 100, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 5 };
 
-        this.sun = { x: 0, y: 0, size: 25, color: '#FFD700' };
+        this.sun = { x: 0, y: 0, size: 30, color: '#FFD700' };
         
         this.planets = [
-            { id: 'mercurio', name: 'MERCURIO', dist: 80, size: 4, color: '#95a5a6', speed: 0.015, angle: Math.random()*6, resources: ['CALORE'], demands: ['GHIACCIO'] },
-            { id: 'venere', name: 'VENERE', dist: 120, size: 6, color: '#e67e22', speed: 0.008, angle: Math.random()*6, resources: ['ACIDO'], demands: ['FILTRI'] },
-            { id: 'terra', name: 'TERRA', dist: 180, size: 8, color: '#4facfe', speed: 0.005, angle: 0, resources: ['CIBO'], demands: ['METALLI'] },
-            { id: 'luna', name: 'LUNA', parent: 'terra', dist: 25, size: 3, color: '#bdc3c7', speed: 0.03, angle: 0, resources: ['METALLI'], demands: ['CIBO'] },
-            { id: 'marte', name: 'MARTE', dist: 250, size: 6, color: '#ff4b2b', speed: 0.0035, angle: 1.2, resources: ['MINERALI'], demands: ['ACQUA'] },
-            { id: 'giove', name: 'GIOVE', dist: 400, size: 15, color: '#f39c12', speed: 0.0012, angle: 2.5, resources: ['GAS'], demands: ['ELETTRONICA'] },
-            { id: 'saturno', name: 'SATURNO', dist: 600, size: 12, color: '#f1c40f', speed: 0.0008, angle: 4, resources: ['METANO'], demands: ['MEDICINA'], rings: true },
-            { id: 'urano', name: 'URANO', dist: 850, size: 10, color: '#a29bfe', speed: 0.0005, angle: 5, resources: ['DIAMANTI'], demands: ['CALORE'] },
-            { id: 'nettuno', name: 'NETTUNO', dist: 1100, size: 10, color: '#0984e3', speed: 0.0003, angle: 1, resources: ['ENERGIA'], demands: ['METANO'] }
+            { id: 'mercurio', name: 'MERCURIO', dist: 100, size: 5, color: '#95a5a6', speed: 0.015, angle: Math.random()*6, resources: ['CALORE'], demands: ['GHIACCIO'] },
+            { id: 'venere', name: 'VENERE', dist: 150, size: 7, color: '#e67e22', speed: 0.008, angle: Math.random()*6, resources: ['ACIDO'], demands: ['FILTRI'] },
+            { id: 'terra', name: 'TERRA', dist: 220, size: 10, color: '#4facfe', speed: 0.005, angle: 0, resources: ['CIBO'], demands: ['METALLI'] },
+            { id: 'luna', name: 'LUNA', parent: 'terra', dist: 30, size: 4, color: '#bdc3c7', speed: 0.03, angle: 0, resources: ['METALLI'], demands: ['CIBO'] },
+            { id: 'marte', name: 'MARTE', dist: 320, size: 8, color: '#ff4b2b', speed: 0.0035, angle: 1.2, resources: ['MINERALI'], demands: ['ACQUA'] },
+            { id: 'giove', name: 'GIOVE', dist: 450, size: 18, color: '#f39c12', speed: 0.0012, angle: 2.5, resources: ['GAS'], demands: ['ELETTRONICA'] },
+            { id: 'saturno', name: 'SATURNO', dist: 650, size: 15, color: '#f1c40f', speed: 0.0008, angle: 4, resources: ['METANO'], demands: ['MEDICINA'], rings: true },
+            { id: 'urano', name: 'URANO', dist: 900, size: 12, color: '#a29bfe', speed: 0.0005, angle: 5, resources: ['DIAMANTI'], demands: ['CALORE'] },
+            { id: 'nettuno', name: 'NETTUNO', dist: 1200, size: 12, color: '#0984e3', speed: 0.0003, angle: 1, resources: ['ENERGIA'], demands: ['METANO'] }
         ];
 
         this.init();
@@ -55,8 +54,8 @@ class SpaceGame {
         this.height = window.innerHeight;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        this.buffer.width = this.width / this.pixelScale;
-        this.buffer.height = this.height / this.pixelScale;
+        this.buffer.width = Math.ceil(this.width / this.pixelScale);
+        this.buffer.height = Math.ceil(this.height / this.pixelScale);
         this.ctx.imageSmoothingEnabled = false;
         this.bctx.imageSmoothingEnabled = false;
     }
@@ -75,7 +74,7 @@ class SpaceGame {
         this.canvas.addEventListener('touchmove', (e) => { this.handleTouch(e); });
         this.canvas.addEventListener('touchend', () => { this.isTouching = false; });
 
-        this.crisisTimer = setInterval(() => { if(this.running) this.spawnCrisis(); }, 10000);
+        this.crisisTimer = setInterval(() => { if(this.running) this.spawnCrisis(); }, 12000);
         document.getElementById('submit-score-btn').addEventListener('click', () => this.submitScore());
     }
 
@@ -83,18 +82,13 @@ class SpaceGame {
 
     buildOutpost() {
         if(!this.running || this.credits < 2000) return;
-        this.outposts.push({ 
-            id: 'op'+Date.now(), name: 'CITTÀ '+ (this.outposts.length+1), 
-            x: this.ship.x, y: this.ship.y, size: 5, color: '#9b59b6', 
-            resources: ['RICERCA'], demands: ['ENERGIA'], level: 1 
-        });
+        this.outposts.push({ id: 'op'+Date.now(), name: 'CITY '+(this.outposts.length+1), x: this.ship.x, y: this.ship.y, size: 6, color: '#9b59b6', resources: ['INFO'], demands: ['POWER'], level: 1 });
         this.credits -= 2000;
     }
 
     hirePilot() {
         if(!this.running || this.credits < 5000) return;
-        const target = this.planets[Math.floor(Math.random() * this.planets.length)];
-        this.fleet.push({ x: 0, y: 0, targetId: target.id, progress: 0, speed: 0.005, name: "P" + (this.fleet.length + 1) });
+        this.fleet.push({ x: 0, y: 0, targetId: this.planets[Math.floor(Math.random() * this.planets.length)].id, progress: 0, speed: 0.005 });
         this.credits -= 5000;
     }
 
@@ -113,12 +107,9 @@ class SpaceGame {
         this.ship.mass = 1 + (this.cargo.length * 0.4);
         let accel = this.baseAccel / this.ship.mass;
 
-        if (this.keys['ArrowUp'] || this.keys['KeyW']) {
-            this.ship.vx += Math.cos(this.ship.angle) * accel;
-            this.ship.vy += Math.sin(this.ship.angle) * accel;
-        }
-        if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.1;
-        if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.1;
+        if (this.keys['ArrowUp'] || this.keys['KeyW']) { this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel; }
+        if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.15;
+        if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.15;
 
         if (this.isTouching) {
             const worldTouchX = (this.touchPos.x / this.pixelScale - this.camera.x) / this.camera.zoom;
@@ -127,24 +118,17 @@ class SpaceGame {
             let angleDiff = targetAngle - this.ship.angle;
             while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
             while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-            this.ship.angle += angleDiff * 0.1;
+            this.ship.angle += angleDiff * 0.2;
             this.ship.vx += Math.cos(this.ship.angle) * accel;
             this.ship.vy += Math.sin(this.ship.angle) * accel;
         }
 
         let distSq = this.ship.x**2 + this.ship.y**2;
         let dist = Math.sqrt(distSq);
-        if (dist < this.sun.size) return this.gameOver("BRUCIATO");
+        if (dist < this.sun.size) return this.gameOver();
+        if (dist > this.mapLimit) { this.ship.vx -= (this.ship.x / dist) * 0.8; this.ship.vy -= (this.ship.y / dist) * 0.8; }
 
-        // MAP BORDER COLLISION
-        if (dist > this.mapLimit) {
-            this.ship.vx -= (this.ship.x / dist) * 0.5;
-            this.ship.vy -= (this.ship.y / dist) * 0.5;
-            this.ship.vx *= 0.9;
-            this.ship.vy *= 0.9;
-        }
-
-        let force = this.G * 200 / distSq;
+        let force = this.G * 300 / distSq;
         this.ship.vx -= (this.ship.x / dist) * force;
         this.ship.vy -= (this.ship.y / dist) * force;
 
@@ -152,29 +136,12 @@ class SpaceGame {
         this.ship.vx *= this.friction; this.ship.vy *= this.friction;
 
         [...this.planets, ...this.outposts].forEach(p => {
-            if(p.speed) { 
-                p.angle += p.speed;
-                let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
-                p.x = parent.x + Math.cos(p.angle) * p.dist;
-                p.y = parent.y + Math.sin(p.angle) * p.dist;
-            }
+            if(p.speed) { p.angle += p.speed; let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun; p.x = parent.x + Math.cos(p.angle) * p.dist; p.y = parent.y + Math.sin(p.angle) * p.dist; }
             let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
-            if(d < p.size + 3) this.dock(p);
+            if(d < p.size + 4) this.dock(p);
         });
 
-        this.fleet.forEach(pilot => {
-            pilot.progress += pilot.speed;
-            const target = this.planets.find(p => p.id === pilot.targetId);
-            const terra = this.planets.find(p => p.id === 'terra');
-            const midDist = (terra.dist + target.dist) / 2 + 50;
-            const midAngle = (terra.angle + target.angle) / 2;
-            if (pilot.progress < 0.5) { let p = pilot.progress * 2; pilot.x = terra.x + (Math.cos(midAngle) * midDist - terra.x) * p; pilot.y = terra.y + (Math.sin(midAngle) * midDist - terra.y) * p; }
-            else { let p = (pilot.progress - 0.5) * 2; pilot.x = (Math.cos(midAngle) * midDist) + (target.x - (Math.cos(midAngle) * midDist)) * p; pilot.y = (Math.sin(midAngle) * midDist) + (target.y - (Math.sin(midAngle) * midDist)) * p; }
-            if(pilot.progress >= 1) { this.credits += 1500; pilot.progress = 0; pilot.targetId = this.planets[Math.floor(Math.random() * this.planets.length)].id; }
-        });
-
-        this.activeCrises.forEach(c => { c.timer -= 1/60; if(c.timer <= 0) this.gameOver(`CITTÀ COLLASSATA`); });
-        
+        this.activeCrises.forEach(c => { c.timer -= 1/60; if(c.timer <= 0) this.gameOver(); });
         this.camera.x += (-this.ship.x * this.camera.zoom + this.buffer.width/2 - this.camera.x) * 0.1;
         this.camera.y += (-this.ship.y * this.camera.zoom + this.buffer.height/2 - this.camera.y) * 0.1;
     }
@@ -186,13 +153,13 @@ class SpaceGame {
             this.cargo.splice(resIdx, 1);
             let reward = 1000;
             let cIdx = this.activeCrises.findIndex(c => c.planet === planet.id);
-            if(cIdx !== -1) { this.activeCrises.splice(cIdx, 1); reward += 2000; }
+            if(cIdx !== -1) { this.activeCrises.splice(cIdx, 1); reward += 3000; }
             this.credits += reward; this.score += reward;
         } else if(this.cargo.length < this.maxCargo && this.credits >= 100 && planet.resources) {
             this.cargo.push(planet.resources[0]);
             this.credits -= 100;
         }
-        this.ship.vx *= -0.2; this.ship.vy *= -0.2;
+        this.ship.vx *= -0.3; this.ship.vy *= -0.3;
     }
 
     draw() {
@@ -203,50 +170,61 @@ class SpaceGame {
         this.bctx.translate(this.camera.x, this.camera.y);
         this.bctx.scale(this.camera.zoom, this.camera.zoom);
 
-        // MAP BORDER
+        // Map Border
         this.bctx.strokeStyle = 'rgba(155, 89, 182, 0.2)';
-        this.bctx.lineWidth = 2;
-        this.bctx.beginPath();
-        this.bctx.arc(0, 0, this.mapLimit, 0, Math.PI * 2);
-        this.bctx.stroke();
+        this.bctx.lineWidth = 1;
+        this.bctx.beginPath(); this.bctx.arc(0, 0, this.mapLimit, 0, Math.PI * 2); this.bctx.stroke();
 
         // Sun
         this.bctx.fillStyle = this.sun.color;
         this.bctx.fillRect(-this.sun.size, -this.sun.size, this.sun.size*2, this.sun.size*2);
 
-        // Planets
+        // Planets & Names (PIXELATED)
         this.planets.forEach(p => {
             this.bctx.fillStyle = p.color;
-            this.bctx.fillRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
+            this.bctx.fillRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
+            
+            // Name (Drawn in buffer to be pixelated)
+            this.bctx.fillStyle = 'white';
+            this.bctx.font = '5px "Courier New"'; // Small font for pixel effect
+            this.bctx.textAlign = 'center';
+            this.bctx.fillText(p.name, Math.floor(p.x), Math.floor(p.y - p.size - 4));
         });
 
         // Outposts
         this.outposts.forEach(p => {
             this.bctx.fillStyle = p.color;
-            this.bctx.fillRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
+            this.bctx.fillRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
             this.bctx.strokeStyle = 'white';
-            this.bctx.strokeRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
+            this.bctx.strokeRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
+            this.bctx.fillStyle = 'white';
+            this.bctx.font = '4px "Courier New"';
+            this.bctx.fillText(p.name, Math.floor(p.x), Math.floor(p.y - p.size - 3));
         });
 
         // Ship
         this.bctx.save();
-        this.bctx.translate(this.ship.x, this.ship.y);
+        this.bctx.translate(Math.floor(this.ship.x), Math.floor(this.ship.y));
         this.bctx.rotate(this.ship.angle);
         this.bctx.fillStyle = 'white';
-        this.bctx.fillRect(-2, -2, 5, 4);
+        this.bctx.fillRect(-3, -2, 6, 4); // Blocky ship
         this.bctx.restore();
 
         this.bctx.restore();
 
+        // Final Scale
         this.ctx.clearRect(0,0,this.width,this.height);
         this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
 
+        // HUD
         this.ctx.fillStyle = 'white';
         this.ctx.font = 'bold 20px "Courier New"';
         this.ctx.fillText(`$ ${this.credits} | SCORE: ${this.score}`, 30, 50);
+        this.ctx.font = '12px "Courier New"';
+        this.ctx.fillText(`STIVA: ${this.cargo.join(', ')}`, 30, 80);
     }
 
-    gameOver(reason) { this.running = false; document.getElementById('game-modal').classList.add('active'); }
+    gameOver() { this.running = false; document.getElementById('game-modal').classList.add('active'); }
     async submitScore() { location.reload(); }
     loop() { if (!this.running) return; this.update(); this.draw(); requestAnimationFrame(() => this.loop()); }
 }
