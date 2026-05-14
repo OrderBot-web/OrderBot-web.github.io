@@ -1,8 +1,7 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Cinematic Earth Launch Edition v5
+ * Follow Camera & Readable Pixels Edition
  */
-console.log("GALAXY WORLD GAME v5 LOADED");
 
 class SpaceGame {
     constructor(canvasId) {
@@ -32,23 +31,21 @@ class SpaceGame {
         this.camera = { x: 0, y: 0, zoom: 0.8 };
         
         this.planets = [
-            { id: 'mercurio', name: 'MERCURIO', dist: 120, size: 6, color: '#95a5a6', speed: 0.015, res: 'SOLARE', req: 'GHIACCIO', spec: 'RELOAD VELOCE' },
-            { id: 'venere', name: 'VENERE', dist: 180, size: 8, color: '#e67e22', speed: 0.008, res: 'ACIDO', req: 'FILTRI', spec: 'CORROSIONE' },
-            { id: 'terra', name: 'TERRA', dist: 260, size: 10, color: '#4facfe', speed: 0.005, res: 'CIBO', req: 'METALLI', spec: 'HUB CENTRALE' },
-            { id: 'luna', name: 'LUNA', parent: 'terra', dist: 35, size: 5, color: '#bdc3c7', speed: 0.03, res: 'ELIO-3', req: 'CIBO', spec: 'BASSA GRAVITÀ' },
-            { id: 'marte', name: 'MARTE', dist: 400, size: 9, color: '#ff4b2b', speed: 0.0035, res: 'FERRO', req: 'ACQUA', spec: 'MINIERA ROSSA' },
-            { id: 'giove', name: 'GIOVE', dist: 600, size: 20, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'CHIPS', spec: 'TEMPESTA ROSSA' },
-            { id: 'saturno', name: 'SATURNO', dist: 850, size: 16, color: '#f1c40f', speed: 0.0008, res: 'GHIACCIO', req: 'MEDS', spec: 'ANELLI RARI', rings: true },
-            { id: 'urano', name: 'URANO', dist: 1100, size: 14, color: '#a29bfe', speed: 0.0005, res: 'DIAMANTI', req: 'GAS', spec: 'VENTI GELIDI' },
-            { id: 'nettuno', name: 'NETTUNO', dist: 1400, size: 14, color: '#0984e3', speed: 0.0003, res: 'ENERGIA', req: 'DIAMANTI', spec: 'ABISSO BLU' }
+            { id: 'mercurio', name: 'MERCURIO', dist: 120, size: 6, color: '#95a5a6', speed: 0.015, res: 'SOLARE', req: 'GHIACCIO' },
+            { id: 'venere', name: 'VENERE', dist: 180, size: 8, color: '#e67e22', speed: 0.008, res: 'ACIDO', req: 'FILTRI' },
+            { id: 'terra', name: 'TERRA', dist: 260, size: 10, color: '#4facfe', speed: 0.005, res: 'CIBO', req: 'METALLI' },
+            { id: 'luna', name: 'LUNA', parent: 'terra', dist: 35, size: 5, color: '#bdc3c7', speed: 0.03, res: 'ELIO-3', req: 'CIBO' },
+            { id: 'marte', name: 'MARTE', dist: 400, size: 9, color: '#ff4b2b', speed: 0.0035, res: 'FERRO', req: 'ACQUA' },
+            { id: 'giove', name: 'GIOVE', dist: 600, size: 20, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'CHIPS' },
+            { id: 'saturno', name: 'SATURNO', dist: 850, size: 16, color: '#f1c40f', speed: 0.0008, res: 'GHIACCIO', req: 'MEDS', rings: true },
+            { id: 'urano', name: 'URANO', dist: 1100, size: 14, color: '#a29bfe', speed: 0.0005, res: 'DIAMANTI', req: 'GAS' },
+            { id: 'nettuno', name: 'NETTUNO', dist: 1400, size: 14, color: '#0984e3', speed: 0.0003, res: 'ENERGIA', req: 'DIAMANTI' }
         ];
 
-        // INITIAL POSITION
         const terra = this.planets.find(p => p.id === 'terra');
         this.ship = { x: terra.dist, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 5 };
         
         this.sun = { x: 0, y: 0, size: 25, color: '#FFD700' };
-        
         this.launchState = 'COUNTDOWN'; 
         this.launchTimer = 180; 
 
@@ -79,7 +76,7 @@ class SpaceGame {
 
     buildOutpost() {
         if(!this.running || this.credits < 2000) return;
-        this.outposts.push({ id: 'op'+Date.now(), name: 'BASE '+(this.outposts.length+1), x: this.ship.x, y: this.ship.y, size: 7, color: '#9b59b6', res: 'CHIPS', req: 'FERRO', level: 1 });
+        this.outposts.push({ id: 'op'+Date.now(), name: 'BASE '+(this.outposts.length+1), x: this.ship.x, y: this.ship.y, size: 7, color: '#9b59b6', res: 'CHIPS', req: 'FERRO' });
         this.credits -= 2000;
     }
 
@@ -95,50 +92,47 @@ class SpaceGame {
     update() {
         if (!this.running) return;
 
-        // LAUNCH ANIMATION LOGIC
         if (this.launchState === 'COUNTDOWN') {
             this.launchTimer--;
             const terra = this.planets.find(p => p.id === 'terra');
             this.ship.x = terra.x; this.ship.y = terra.y; 
             if (this.launchTimer <= 0) { this.launchState = 'BOOST'; this.launchTimer = 60; }
-            return;
         } else if (this.launchState === 'BOOST') {
             this.launchTimer--;
-            this.ship.vy = -3; 
-            this.ship.angle = -Math.PI/2;
+            this.ship.vy = -3; this.ship.angle = -Math.PI/2;
             if(Math.random() > 0.4) this.particles.push({ x: this.ship.x, y: this.ship.y, vx: (Math.random()-0.5), vy: 2, life: 30, color: '#ff4b2b' });
             if (this.launchTimer <= 0) { this.launchState = 'PLAY'; }
         }
 
-        this.ship.mass = 1 + (this.cargo.length * 0.2);
-        let accel = this.baseAccel / this.ship.mass;
-        if (this.keys['ArrowUp'] || this.keys['KeyW']) { this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel; }
-        if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.12;
-        if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.12;
-        
-        if (this.isTouching) {
-            const worldTouchX = (this.touchPos.x / this.pixelScale - this.camera.x) / this.camera.zoom;
-            const worldTouchY = (this.touchPos.y / this.pixelScale - this.camera.y) / this.camera.zoom;
-            const targetAngle = Math.atan2(worldTouchY - this.ship.y, worldTouchX - this.ship.x);
-            let angleDiff = targetAngle - this.ship.angle;
-            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-            this.ship.angle += angleDiff * 0.15;
-            this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel;
+        if(this.launchState === 'PLAY' || this.launchState === 'BOOST') {
+            this.ship.mass = 1 + (this.cargo.length * 0.2);
+            let accel = this.baseAccel / this.ship.mass;
+            if (this.keys['ArrowUp'] || this.keys['KeyW']) { this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel; }
+            if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.12;
+            if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.12;
+            
+            if (this.isTouching) {
+                const worldTouchX = (this.touchPos.x / this.pixelScale - this.camera.x) / this.camera.zoom;
+                const worldTouchY = (this.touchPos.y / this.pixelScale - this.camera.y) / this.camera.zoom;
+                const targetAngle = Math.atan2(worldTouchY - this.ship.y, worldTouchX - this.ship.x);
+                let angleDiff = targetAngle - this.ship.angle;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                this.ship.angle += angleDiff * 0.15;
+                this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel;
+            }
+
+            let dSun = Math.sqrt(this.ship.x**2 + this.ship.y**2);
+            if (dSun < this.sun.size) return this.gameOver();
+            if (dSun > this.mapLimit) { this.ship.vx -= (this.ship.x / dSun) * 1.2; this.ship.vy -= (this.ship.y / dSun) * 1.2; }
+            let force = this.G * 250 / (dSun**2);
+            this.ship.vx -= (this.ship.x / dSun) * force; this.ship.vy -= (this.ship.y / dSun) * force;
+            this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
+            this.ship.vx *= this.friction; this.ship.vy *= this.friction;
         }
 
-        let dSun = Math.sqrt(this.ship.x**2 + this.ship.y**2);
-        if (dSun < this.sun.size) return this.gameOver();
-        if (dSun > this.mapLimit) { this.ship.vx -= (this.ship.x / dSun) * 1.2; this.ship.vy -= (this.ship.y / dSun) * 1.2; }
-        let force = this.G * 250 / (dSun**2);
-        this.ship.vx -= (this.ship.x / dSun) * force; this.ship.vy -= (this.ship.y / dSun) * force;
-        this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
-        this.ship.vx *= this.friction; this.ship.vy *= this.friction;
-
-        // Particles
         this.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if(p.life <= 0) this.particles.splice(i, 1); });
 
-        // Update Planets
         this.planets.forEach(p => {
             p.angle = (p.angle || 0) + p.speed;
             let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
@@ -154,6 +148,8 @@ class SpaceGame {
         });
 
         this.activeCrises.forEach(c => { c.timer -= 1/60; if(c.timer <= 0) this.gameOver(); });
+        
+        // CAMERA ALWAYS FOLLOWS SHIP
         this.camera.x = -this.ship.x * this.camera.zoom + this.buffer.width/2;
         this.camera.y = -this.ship.y * this.camera.zoom + this.buffer.height/2;
     }
@@ -164,7 +160,7 @@ class SpaceGame {
             this.cargo.splice(resIdx, 1);
             let reward = 1000;
             let cIdx = this.activeCrises.findIndex(c => c.planet === p.id);
-            if(cIdx !== -1) { this.activeCrises.splice(cIdx, 1); reward += 3000; p.level++; }
+            if(cIdx !== -1) { this.activeCrises.splice(cIdx, 1); reward += 3000; }
             this.credits += reward; this.score += reward;
         } else if(this.cargo.length < this.maxCargo && this.credits >= 100 && p.res) {
             this.cargo.push(p.res); this.credits -= 100;
@@ -174,20 +170,29 @@ class SpaceGame {
 
     draw() {
         this.bctx.fillStyle = '#020205'; this.bctx.fillRect(0, 0, this.buffer.width, this.buffer.height);
-        this.bctx.save(); this.bctx.translate(this.camera.x, this.camera.y); this.bctx.scale(this.camera.zoom, this.camera.zoom);
+        this.bctx.save();
+        this.bctx.translate(this.camera.x, this.camera.y);
+        this.bctx.scale(this.camera.zoom, this.camera.zoom);
 
         // Sun
         this.bctx.fillStyle = this.sun.color; this.bctx.fillRect(-this.sun.size, -this.sun.size, this.sun.size*2, this.sun.size*2);
 
-        // Planets
+        // Planets & Readable Names
         this.planets.forEach(p => {
             this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
-            this.bctx.fillStyle = 'white'; this.bctx.font = '5px monospace'; this.bctx.textAlign = 'center';
-            this.bctx.fillText(p.name, p.x, p.y - p.size - 4);
+            this.bctx.fillStyle = 'white';
+            this.bctx.font = 'bold 8px monospace'; // LARGER FONT
+            this.bctx.textAlign = 'center';
+            this.bctx.fillText(p.name, p.x, p.y - p.size - 6);
         });
 
-        // Particles
         this.particles.forEach(p => { this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x, p.y, 2, 2); });
+
+        // Cities
+        this.outposts.forEach(p => {
+            this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
+            this.bctx.strokeStyle = 'white'; this.bctx.strokeRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
+        });
 
         // Ship
         this.bctx.save(); this.bctx.translate(this.ship.x, this.ship.y); this.bctx.rotate(this.ship.angle);
@@ -195,16 +200,22 @@ class SpaceGame {
         
         // Launch UI
         if(this.launchState === 'COUNTDOWN') {
-            this.bctx.fillStyle = 'white'; this.bctx.font = 'bold 12px monospace';
-            const count = Math.ceil(this.launchTimer / 60);
-            this.bctx.fillText(count, this.ship.x, this.ship.y - 20);
+            this.bctx.fillStyle = 'white'; this.bctx.font = 'bold 14px monospace';
+            this.bctx.fillText(Math.ceil(this.launchTimer / 60), this.ship.x, this.ship.y - 25);
         } else if(this.launchState === 'BOOST') {
-            this.bctx.fillStyle = '#ff4b2b'; this.bctx.font = 'bold 10px monospace';
-            this.bctx.fillText("LANCIO!", this.ship.x, this.ship.y - 20);
+            this.bctx.fillStyle = '#ff4b2b'; this.bctx.font = 'bold 12px monospace';
+            this.bctx.fillText("LANCIO!", this.ship.x, this.ship.y - 25);
         }
 
         this.bctx.restore();
         this.ctx.clearRect(0,0,this.width,this.height); this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
+
+        // High-Res HUD
+        this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 20px "Courier New"';
+        this.ctx.fillText(`$ ${this.credits} | SCORE: ${this.score}`, 30, 50);
+        this.ctx.font = '14px "Courier New"';
+        this.ctx.fillText(`STIVA: ${this.cargo.join(', ')}`, 30, 80);
+        this.activeCrises.forEach((c, idx) => { this.ctx.fillStyle = '#f00'; this.ctx.fillRect(this.width - 180, 30 + idx*40, (c.timer/45)*150, 20); });
     }
 
     gameOver() { this.running = false; location.reload(); }
