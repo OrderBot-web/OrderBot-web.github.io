@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Balanced Edition
+ * Final Balanced Edition (v3)
  */
 
 class SpaceGame {
@@ -8,15 +8,14 @@ class SpaceGame {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         
-        // Moderate Pixelation (Balanced Look)
         this.pixelScale = 4; 
         this.buffer = document.createElement('canvas');
         this.bctx = this.buffer.getContext('2d');
         
         this.resize();
 
-        this.G = 0.5; // Nerfed Gravity (was 1.0)
-        this.friction = 0.994; // Less friction for smoother flight
+        this.G = 0.5; 
+        this.friction = 0.994;
         this.baseAccel = 0.5;
         this.mapLimit = 3000; 
 
@@ -29,7 +28,6 @@ class SpaceGame {
         this.outposts = []; 
 
         this.camera = { x: 0, y: 0, zoom: 0.8 };
-        // Starting further away from the Sun (was 120)
         this.ship = { x: 250, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 5 };
 
         this.sun = { x: 0, y: 0, size: 25, color: '#FFD700' };
@@ -40,7 +38,7 @@ class SpaceGame {
             { id: 'terra', name: 'TERRA', dist: 260, size: 10, color: '#4facfe', speed: 0.005, res: 'CIBO', req: 'METALLI', spec: 'HUB CENTRALE' },
             { id: 'luna', name: 'LUNA', parent: 'terra', dist: 35, size: 5, color: '#bdc3c7', speed: 0.03, res: 'ELIO-3', req: 'CIBO', spec: 'BASSA GRAVITÀ' },
             { id: 'marte', name: 'MARTE', dist: 400, size: 9, color: '#ff4b2b', speed: 0.0035, res: 'FERRO', req: 'ACQUA', spec: 'MINIERA ROSSA' },
-            { id: 'giove', name: 'GIOVE', dist: 600, size: 20, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'ELETTRONICA', spec: 'TEMPESTA ROSSA' },
+            { id: 'giove', name: 'GIOVE', dist: 600, size: 20, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'CHIPS', spec: 'TEMPESTA ROSSA' },
             { id: 'saturno', name: 'SATURNO', dist: 850, size: 16, color: '#f1c40f', speed: 0.0008, res: 'GHIACCIO', req: 'MEDS', spec: 'ANELLI RARI', rings: true },
             { id: 'urano', name: 'URANO', dist: 1100, size: 14, color: '#a29bfe', speed: 0.0005, res: 'DIAMANTI', req: 'GAS', spec: 'VENTI GELIDI' },
             { id: 'nettuno', name: 'NETTUNO', dist: 1400, size: 14, color: '#0984e3', speed: 0.0003, res: 'ENERGIA', req: 'DIAMANTI', spec: 'ABISSO BLU' }
@@ -88,7 +86,7 @@ class SpaceGame {
 
     update() {
         if (!this.running) return;
-        this.ship.mass = 1 + (this.cargo.length * 0.2); // Reduced mass impact
+        this.ship.mass = 1 + (this.cargo.length * 0.2);
         let accel = this.baseAccel / this.ship.mass;
         if (this.keys['ArrowUp'] || this.keys['KeyW']) { this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel; }
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.12;
@@ -106,8 +104,7 @@ class SpaceGame {
         let dSun = Math.sqrt(this.ship.x**2 + this.ship.y**2);
         if (dSun < this.sun.size) return this.gameOver();
         if (dSun > this.mapLimit) { this.ship.vx -= (this.ship.x / dSun) * 1.2; this.ship.vy -= (this.ship.y / dSun) * 1.2; }
-        
-        let force = this.G * 250 / (dSun**2); // Further nerfed gravity
+        let force = this.G * 250 / (dSun**2);
         this.ship.vx -= (this.ship.x / dSun) * force; this.ship.vy -= (this.ship.y / dSun) * force;
         this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
         this.ship.vx *= this.friction; this.ship.vy *= this.friction;
@@ -137,10 +134,33 @@ class SpaceGame {
         this.ship.vx *= -0.2; this.ship.vy *= -0.2;
     }
 
+    drawNavigation() {
+        const targetCrisis = this.activeCrises[0];
+        if(!targetCrisis) return;
+        const target = this.planets.find(p => p.id === targetCrisis.planet) || this.outposts.find(o => o.id === targetCrisis.planet);
+        if(!target) return;
+        this.bctx.beginPath(); this.bctx.setLineDash([2, 4]); this.bctx.strokeStyle = 'rgba(155, 89, 182, 0.4)'; this.bctx.lineWidth = 1;
+        let curX = this.ship.x; let curY = this.ship.y; this.bctx.moveTo(curX, curY);
+        for(let i=1; i<=8; i++) {
+            let t = i / 8; let directX = curX + (target.x - curX) * t; let directY = curY + (target.y - curY) * t;
+            let distToSun = Math.sqrt(directX**2 + directY**2);
+            let push = (200 / distToSun) * Math.sin(t * Math.PI);
+            let finalX = directX + (directX / distToSun) * push * 50; let finalY = directY + (directY / distToSun) * push * 50;
+            this.bctx.lineTo(finalX, finalY);
+        }
+        this.bctx.stroke(); this.bctx.setLineDash([]);
+    }
+
     draw() {
         this.bctx.fillStyle = '#020205'; this.bctx.fillRect(0, 0, this.buffer.width, this.buffer.height);
         this.bctx.save(); this.bctx.translate(this.camera.x, this.camera.y);
         this.bctx.save(); this.bctx.scale(this.camera.zoom, this.camera.zoom);
+
+        // Map Border
+        this.bctx.strokeStyle = 'rgba(155, 89, 182, 0.2)'; this.bctx.lineWidth = 1;
+        this.bctx.beginPath(); this.bctx.arc(0, 0, this.mapLimit, 0, Math.PI * 2); this.bctx.stroke();
+
+        this.drawNavigation(); // Restoration of pathfinder
 
         // Sun
         this.bctx.fillStyle = this.sun.color; this.bctx.fillRect(Math.floor(-this.sun.size), Math.floor(-this.sun.size), this.sun.size*2, this.sun.size*2);
@@ -163,12 +183,9 @@ class SpaceGame {
         // Ship
         this.bctx.save(); this.bctx.translate(Math.floor(this.ship.x), Math.floor(this.ship.y)); this.bctx.rotate(this.ship.angle); this.bctx.fillStyle = 'white'; this.bctx.fillRect(-3, -2, 6, 4); this.bctx.restore();
         
-        this.bctx.restore();
-        this.bctx.restore();
+        this.bctx.restore(); this.bctx.restore();
 
         this.ctx.clearRect(0,0,this.width,this.height); this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
-
-        // HUD
         this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 18px monospace'; this.ctx.fillText(`CASH: $${this.credits} | SCORE: ${this.score}`, 20, 40);
         this.ctx.fillText(`CARGO: ${this.cargo.join(',')}`, 20, 65);
     }
