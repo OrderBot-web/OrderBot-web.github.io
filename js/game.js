@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Fleet & Automation Update
+ * Mobile Support & Smart AI Pilots
  */
 
 class SpaceGame {
@@ -24,7 +24,7 @@ class SpaceGame {
         this.maxCargo = 6;
         this.activeCrises = [];
         this.outposts = []; 
-        this.fleet = []; // PNG Pilots
+        this.fleet = []; 
 
         this.camera = { x: 0, y: 0, zoom: 0.6 };
         this.ship = { x: 450, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 14, mass: 1, color: '#fff' };
@@ -71,8 +71,21 @@ class SpaceGame {
         });
         window.addEventListener('keyup', (e) => this.keys[e.code] = false);
 
+        // Mobile Controls
+        this.isTouching = false;
+        this.touchPos = { x: 0, y: 0 };
+        this.canvas.addEventListener('touchstart', (e) => { this.isTouching = true; this.handleTouch(e); });
+        this.canvas.addEventListener('touchmove', (e) => { this.handleTouch(e); });
+        this.canvas.addEventListener('touchend', () => { this.isTouching = false; });
+
         this.crisisTimer = setInterval(() => { if(this.running) this.spawnCrisis(); }, 12000);
         document.getElementById('submit-score-btn').addEventListener('click', () => this.submitScore());
+    }
+
+    handleTouch(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        this.touchPos = { x: touch.clientX, y: touch.clientY };
     }
 
     buildOutpost() {
@@ -86,14 +99,12 @@ class SpaceGame {
 
     hirePilot() {
         if(!this.running || this.credits < 5000) return;
-        // Hiring a pilot that moves from Terra to a random planet
         const target = this.planets[Math.floor(Math.random() * this.planets.length)];
         this.fleet.push({
             x: 0, y: 0, targetId: target.id, progress: 0, speed: 0.005,
             name: "PILOTA " + (this.fleet.length + 1)
         });
         this.credits -= 5000;
-        alert("PILOTA ASSUNTO! Sta consegnando verso " + target.name);
     }
 
     spawnCrisis() {
@@ -111,12 +122,31 @@ class SpaceGame {
         this.ship.mass = 1 + (this.cargo.length * 0.4);
         let accel = this.baseAccel / this.ship.mass;
 
+        // Desktop Controls
         if (this.keys['ArrowUp'] || this.keys['KeyW']) {
             this.ship.vx += Math.cos(this.ship.angle) * accel;
             this.ship.vy += Math.sin(this.ship.angle) * accel;
         }
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.07 / Math.sqrt(this.ship.mass);
         if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.07 / Math.sqrt(this.ship.mass);
+
+        // Mobile Logic
+        if (this.isTouching) {
+            // Calculate angle towards touch point
+            const worldTouchX = (this.touchPos.x - this.camera.x) / this.camera.zoom;
+            const worldTouchY = (this.touchPos.y - this.camera.y) / this.camera.zoom;
+            const targetAngle = Math.atan2(worldTouchY - this.ship.y, worldTouchX - this.ship.x);
+            
+            // Smoothly rotate towards target
+            let angleDiff = targetAngle - this.ship.angle;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            this.ship.angle += angleDiff * 0.1;
+            
+            // Accelerate
+            this.ship.vx += Math.cos(this.ship.angle) * accel;
+            this.ship.vy += Math.sin(this.ship.angle) * accel;
+        }
 
         let distSq = this.ship.x**2 + this.ship.y**2;
         let dist = Math.sqrt(distSq);
@@ -131,7 +161,7 @@ class SpaceGame {
 
         // Planets & Outposts
         [...this.planets, ...this.outposts].forEach(p => {
-            if(p.speed) { // It's a planet
+            if(p.speed) { 
                 p.angle += p.speed;
                 let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
                 p.x = parent.x + Math.cos(p.angle) * p.dist;
@@ -148,20 +178,30 @@ class SpaceGame {
             if(d < a.size + 5) this.hitAsteroid();
         });
 
-        // Fleet Automation
+        // Fleet Automation (Smart Navigation)
         this.fleet.forEach((pilot, idx) => {
             pilot.progress += pilot.speed;
             const target = this.planets.find(p => p.id === pilot.targetId);
             const terra = this.planets.find(p => p.id === 'terra');
             
-            // Linear interpolation between Terra and Target
-            pilot.x = terra.x + (target.x - terra.x) * pilot.progress;
-            pilot.y = terra.y + (target.y - terra.y) * pilot.progress;
+            // Safe path: Move along an arc to avoid the Sun
+            const midDist = (terra.dist + target.dist) / 2 + 100; // Curve outwards
+            const midAngle = (terra.angle + target.angle) / 2;
+            
+            if (pilot.progress < 0.5) {
+                // To Midpoint
+                let p = pilot.progress * 2;
+                pilot.x = terra.x + (Math.cos(midAngle) * midDist - terra.x) * p;
+                pilot.y = terra.y + (Math.sin(midAngle) * midDist - terra.y) * p;
+            } else {
+                // To Target
+                let p = (pilot.progress - 0.5) * 2;
+                pilot.x = (Math.cos(midAngle) * midDist) + (target.x - (Math.cos(midAngle) * midDist)) * p;
+                pilot.y = (Math.sin(midAngle) * midDist) + (target.y - (Math.sin(midAngle) * midDist)) * p;
+            }
 
             if(pilot.progress >= 1) {
-                this.credits += 1500;
-                this.score += 1000;
-                // Re-route
+                this.credits += 1500; this.score += 1000;
                 pilot.progress = 0;
                 pilot.targetId = this.planets[Math.floor(Math.random() * this.planets.length)].id;
             }
@@ -213,23 +253,16 @@ class SpaceGame {
         // Sun
         this.ctx.beginPath(); this.ctx.arc(0, 0, this.sun.size, 0, Math.PI * 2); this.ctx.fillStyle = this.sun.color; this.ctx.fill();
 
-        // Planets, Outposts, Asteroids...
+        // Planets
         this.planets.forEach(p => {
             if(p.rings) { this.ctx.strokeStyle = 'rgba(255,255,255,0.1)'; this.ctx.lineWidth = 10; this.ctx.beginPath(); this.ctx.ellipse(p.x, p.y, p.size * 2, p.size * 0.8, p.angle, 0, Math.PI*2); this.ctx.stroke(); }
             this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
-        });
-
-        this.outposts.forEach(p => {
-            this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
-            this.ctx.strokeStyle = 'white'; this.ctx.lineWidth = 2; this.ctx.stroke();
         });
 
         // Fleet (Pilots)
         this.fleet.forEach(p => {
             this.ctx.fillStyle = '#2ecc71';
             this.ctx.fillRect(p.x - 5, p.y - 5, 10, 10);
-            this.ctx.font = '8px Inter';
-            this.ctx.fillText(p.name, p.x, p.y - 10);
         });
 
         // Ship
@@ -242,20 +275,9 @@ class SpaceGame {
         // HUD
         this.ctx.fillStyle = 'white';
         this.ctx.font = 'bold 22px Outfit';
-        this.ctx.fillText(`$ ${this.credits}`, 40, 60);
-        this.ctx.font = '11px Inter';
-        this.ctx.fillText(`B: COSTRUISCI (2000) | H: ASSUMI PILOTA (5000)`, 40, 85);
-        this.ctx.fillText(`FLOTTA: ${this.fleet.length} NAVI PNG`, 40, 105);
-        this.ctx.fillText(`STIVA: ${this.cargo.join(', ')}`, 40, 125);
-
-        this.activeCrises.forEach((c, idx) => {
-            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-            this.ctx.fillRect(this.width - 260, 30 + idx*70, 230, 60);
-            this.ctx.fillStyle = 'white';
-            this.ctx.fillText(`CRISI: ${c.planet.toUpperCase()}`, this.width - 250, 55 + idx*70);
-            this.ctx.fillStyle = '#ff4b2b';
-            this.ctx.fillRect(this.width - 250, 65 + idx*70, (c.timer/c.maxTime) * 210, 6);
-        });
+        this.ctx.fillText(`$ ${this.credits}`, 30, 50);
+        this.ctx.font = '10px Inter';
+        this.ctx.fillText(`TOCCA PER VOLARE | B: COSTRUISCI | H: PILOTA`, 30, 75);
     }
 
     gameOver(reason) { this.running = false; document.getElementById('game-modal').classList.add('active'); document.querySelector('#game-modal h2').innerText = reason; }
