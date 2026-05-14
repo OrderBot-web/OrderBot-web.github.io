@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * ULTRA PIXEL EDITION - Final Logic
+ * Planet Specialties Update
  */
 
 class SpaceGame {
@@ -8,7 +8,6 @@ class SpaceGame {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         
-        // HIGHER SCALE FOR EXTREME PIXELS
         this.pixelScale = 8; 
         this.buffer = document.createElement('canvas');
         this.bctx = this.buffer.getContext('2d');
@@ -27,66 +26,57 @@ class SpaceGame {
         this.maxCargo = 8;
         this.activeCrises = [];
         this.outposts = []; 
-        this.fleet = []; 
 
         this.camera = { x: 0, y: 0, zoom: 1.0 };
         this.ship = { x: 120, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 3 };
 
         this.sun = { x: 0, y: 0, size: 20, color: '#FFD700' };
         
-        // Diversified Resources (Foods/Materials)
+        // Planets with Unique Specialties
         this.planets = [
-            { id: 'mercurio', name: 'MERCURIO', dist: 90, size: 4, color: '#95a5a6', speed: 0.015, res: 'VAPORE', req: 'GHIACCIO' },
-            { id: 'venere', name: 'VENERE', dist: 140, size: 6, color: '#e67e22', speed: 0.008, res: 'ZOLFO', req: 'FILTRI' },
-            { id: 'terra', name: 'TERRA', dist: 200, size: 8, color: '#4facfe', speed: 0.005, res: 'CEREALI', req: 'METALLI' },
-            { id: 'luna', name: 'LUNA', parent: 'terra', dist: 30, size: 3, color: '#bdc3c7', speed: 0.03, res: 'METALLI', req: 'CEREALI' },
-            { id: 'marte', name: 'MARTE', dist: 300, size: 7, color: '#ff4b2b', speed: 0.0035, res: 'MINERALI', req: 'ACQUA' },
-            { id: 'giove', name: 'GIOVE', dist: 450, size: 15, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'CHIPS' },
-            { id: 'saturno', name: 'SATURNO', dist: 650, size: 12, color: '#f1c40f', speed: 0.0008, res: 'IDROGENO', req: 'MEDS', rings: true },
-            { id: 'urano', name: 'URANO', dist: 900, size: 10, color: '#a29bfe', speed: 0.0005, res: 'DIAMANTI', req: 'VAPORE' },
-            { id: 'nettuno', name: 'NETTUNO', dist: 1200, size: 10, color: '#0984e3', speed: 0.0003, res: 'ACQUA', req: 'GAS' }
+            { id: 'mercurio', name: 'MERCURIO', dist: 90, size: 4, color: '#95a5a6', speed: 0.015, res: 'SOLARE', req: 'GHIACCIO', spec: 'RELOAD VELOCE' },
+            { id: 'venere', name: 'VENERE', dist: 140, size: 6, color: '#e67e22', speed: 0.008, res: 'ACIDO', req: 'FILTRI', spec: 'CORROSIONE' },
+            { id: 'terra', name: 'TERRA', dist: 200, size: 8, color: '#4facfe', speed: 0.005, res: 'CIBO', req: 'METALLI', spec: 'HUB CENTRALE' },
+            { id: 'luna', name: 'LUNA', parent: 'terra', dist: 30, size: 3, color: '#bdc3c7', speed: 0.03, res: 'ELIO-3', req: 'CIBO', spec: 'BASSA GRAVITÀ' },
+            { id: 'marte', name: 'MARTE', dist: 300, size: 7, color: '#ff4b2b', speed: 0.0035, res: 'FERRO', req: 'ACQUA', spec: 'MINIERA ROSSA' },
+            { id: 'giove', name: 'GIOVE', dist: 450, size: 15, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'ELETTRONICA', spec: 'GIGANTE GAS' },
+            { id: 'saturno', name: 'SATURNO', dist: 650, size: 12, color: '#f1c40f', speed: 0.0008, res: 'GHIACCIO', req: 'MEDS', spec: 'ANELLI RARI', rings: true },
+            { id: 'urano', name: 'URANO', dist: 900, size: 10, color: '#a29bfe', speed: 0.0005, res: 'DIAMANTI', req: 'GAS', spec: 'VENTI GELIDI' },
+            { id: 'nettuno', name: 'NETTUNO', dist: 1200, size: 10, color: '#0984e3', speed: 0.0003, res: 'ENERGIA', req: 'DIAMANTI', spec: 'ABISSO BLU' }
         ];
 
         this.init();
     }
 
     resize() {
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
+        this.width = window.innerWidth; this.height = window.innerHeight;
+        this.canvas.width = this.width; this.canvas.height = this.height;
         this.buffer.width = Math.ceil(this.width / this.pixelScale);
         this.buffer.height = Math.ceil(this.height / this.pixelScale);
-        this.ctx.imageSmoothingEnabled = false;
-        this.bctx.imageSmoothingEnabled = false;
+        this.ctx.imageSmoothingEnabled = false; this.bctx.imageSmoothingEnabled = false;
     }
 
     init() {
         window.addEventListener('resize', () => this.resize());
         this.keys = {};
-        window.addEventListener('keydown', (e) => {
-            this.keys[e.code] = true;
-            if(e.code === 'KeyB') this.buildOutpost();
-        });
+        window.addEventListener('keydown', (e) => { this.keys[e.code] = true; if(e.code === 'KeyB') this.buildOutpost(); });
         window.addEventListener('keyup', (e) => this.keys[e.code] = false);
-
-        // Crisis Loop - Frequency increases with city count
+        this.canvas.addEventListener('touchstart', (e) => { this.isTouching = true; this.handleTouch(e); });
+        this.canvas.addEventListener('touchmove', (e) => { this.handleTouch(e); });
+        this.canvas.addEventListener('touchend', () => { this.isTouching = false; });
         this.crisisLoop = setInterval(() => { if(this.running) this.spawnCrisis(); }, 8000);
         document.getElementById('submit-score-btn').addEventListener('click', () => this.submitScore());
     }
 
+    handleTouch(e) { e.preventDefault(); const touch = e.touches[0]; this.touchPos = { x: touch.clientX, y: touch.clientY }; }
+
     buildOutpost() {
         if(!this.running || this.credits < 2000) return;
-        this.outposts.push({ 
-            id: 'op'+Date.now(), name: 'BASE '+(this.outposts.length+1), 
-            x: this.ship.x, y: this.ship.y, size: 5, color: '#9b59b6', 
-            res: 'CHIPS', req: 'METALLI', level: 1 
-        });
+        this.outposts.push({ id: 'op'+Date.now(), name: 'BASE '+(this.outposts.length+1), x: this.ship.x, y: this.ship.y, size: 5, color: '#9b59b6', res: 'CHIPS', req: 'FERRO', level: 1 });
         this.credits -= 2000;
     }
 
     spawnCrisis() {
-        // ONLY ON USER CITIES
         if(this.outposts.length === 0) return;
         const p = this.outposts[Math.floor(Math.random() * this.outposts.length)];
         if(this.activeCrises.find(c => c.planet === p.id)) return;
@@ -97,22 +87,26 @@ class SpaceGame {
 
     update() {
         if (!this.running) return;
-
         this.ship.mass = 1 + (this.cargo.length * 0.3);
         let accel = this.baseAccel / this.ship.mass;
-
         if (this.keys['ArrowUp'] || this.keys['KeyW']) { this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel; }
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) this.ship.angle -= 0.15;
         if (this.keys['ArrowRight'] || this.keys['KeyD']) this.ship.angle += 0.15;
-
+        if (this.isTouching) {
+            const worldTouchX = (this.touchPos.x / this.pixelScale - this.camera.x) / this.camera.zoom;
+            const worldTouchY = (this.touchPos.y / this.pixelScale - this.camera.y) / this.camera.zoom;
+            const targetAngle = Math.atan2(worldTouchY - this.ship.y, worldTouchX - this.ship.x);
+            let angleDiff = targetAngle - this.ship.angle;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            this.ship.angle += angleDiff * 0.2;
+            this.ship.vx += Math.cos(this.ship.angle) * accel; this.ship.vy += Math.sin(this.ship.angle) * accel;
+        }
         let dSun = Math.sqrt(this.ship.x**2 + this.ship.y**2);
         if (dSun < this.sun.size) return this.gameOver();
         if (dSun > this.mapLimit) { this.ship.vx -= (this.ship.x / dSun) * 1.5; this.ship.vy -= (this.ship.y / dSun) * 1.5; }
-
         let force = this.G * 400 / (dSun**2);
-        this.ship.vx -= (this.ship.x / dSun) * force;
-        this.ship.vy -= (this.ship.y / dSun) * force;
-
+        this.ship.vx -= (this.ship.x / dSun) * force; this.ship.vy -= (this.ship.y / dSun) * force;
         this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
         this.ship.vx *= this.friction; this.ship.vy *= this.friction;
 
@@ -142,56 +136,34 @@ class SpaceGame {
     }
 
     draw() {
-        this.bctx.fillStyle = '#020205';
-        this.bctx.fillRect(0, 0, this.buffer.width, this.buffer.height);
-        this.bctx.save();
-        this.bctx.translate(this.camera.x, this.camera.y);
+        this.bctx.fillStyle = '#020205'; this.bctx.fillRect(0, 0, this.buffer.width, this.buffer.height);
+        this.bctx.save(); this.bctx.translate(this.camera.x, this.camera.y);
 
-        // Sun (Big Pixel Block)
-        this.bctx.fillStyle = this.sun.color;
-        this.bctx.fillRect(Math.floor(-this.sun.size), Math.floor(-this.sun.size), this.sun.size*2, this.sun.size*2);
+        // Sun
+        this.bctx.fillStyle = this.sun.color; this.bctx.fillRect(Math.floor(-this.sun.size), Math.floor(-this.sun.size), this.sun.size*2, this.sun.size*2);
 
         // Planets
         this.planets.forEach(p => {
-            this.bctx.fillStyle = p.color;
-            this.bctx.fillRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
-            this.bctx.fillStyle = 'white';
-            this.bctx.font = '4px "Courier New"';
-            this.bctx.textAlign = 'center';
-            this.bctx.fillText(p.name, Math.floor(p.x), Math.floor(p.y - p.size - 2));
+            this.bctx.fillStyle = p.color; this.bctx.fillRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
+            this.bctx.fillStyle = 'white'; this.bctx.font = '4px "Courier New"'; this.bctx.textAlign = 'center';
+            this.bctx.fillText(p.name, Math.floor(p.x), Math.floor(p.y - p.size - 5));
+            this.bctx.fillStyle = 'rgba(255,255,255,0.5)'; this.bctx.font = '3px "Courier New"';
+            this.bctx.fillText(p.spec, Math.floor(p.x), Math.floor(p.y + p.size + 4));
         });
 
         // Cities
         this.outposts.forEach(p => {
-            this.bctx.fillStyle = p.color;
-            this.bctx.fillRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
-            this.bctx.strokeStyle = 'white'; this.bctx.lineWidth = 1;
-            this.bctx.strokeRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
+            this.bctx.fillStyle = p.color; this.bctx.fillRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
+            this.bctx.strokeStyle = 'white'; this.bctx.lineWidth = 1; this.bctx.strokeRect(Math.floor(p.x - p.size), Math.floor(p.y - p.size), p.size*2, p.size*2);
         });
 
         // Ship
-        this.bctx.save();
-        this.bctx.translate(Math.floor(this.ship.x), Math.floor(this.ship.y));
-        this.bctx.rotate(this.ship.angle);
-        this.bctx.fillStyle = 'white';
-        this.bctx.fillRect(-2, -1, 4, 2);
+        this.bctx.save(); this.bctx.translate(Math.floor(this.ship.x), Math.floor(this.ship.y)); this.bctx.rotate(this.ship.angle); this.bctx.fillStyle = 'white'; this.bctx.fillRect(-2, -1, 4, 2); this.bctx.restore();
         this.bctx.restore();
 
-        this.bctx.restore();
-
-        this.ctx.clearRect(0,0,this.width,this.height);
-        this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
-
-        // HUD
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 18px monospace';
-        this.ctx.fillText(`CASH: $${this.credits} | SCORE: ${this.score}`, 20, 40);
+        this.ctx.clearRect(0,0,this.width,this.height); this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
+        this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 18px monospace'; this.ctx.fillText(`CASH: $${this.credits} | SCORE: ${this.score}`, 20, 40);
         this.ctx.fillText(`CARGO: ${this.cargo.join(',')}`, 20, 65);
-        
-        this.activeCrises.forEach((c, idx) => {
-            this.ctx.fillStyle = '#f00';
-            this.ctx.fillRect(this.width - 150, 20 + idx*30, (c.timer/45)*130, 15);
-        });
     }
 
     gameOver() { this.running = false; location.reload(); }
