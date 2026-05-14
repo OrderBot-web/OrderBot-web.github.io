@@ -253,9 +253,9 @@ class SpaceGame {
     }
 }
 
-// Secret Trigger (Moved to Brand Name Text)
+// Secret Trigger (Invisible Overlay)
 let logoClicks = 0;
-document.querySelector('header nav a span').addEventListener('click', (e) => {
+document.getElementById('secret-trigger').addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
     logoClicks++;
