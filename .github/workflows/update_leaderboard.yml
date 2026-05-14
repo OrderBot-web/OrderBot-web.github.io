@@ -1,0 +1,28 @@
+name: Update Leaderboard
+
+on:
+  repository_dispatch:
+    types: [submit_score]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Update JSON
+        run: |
+          NAME="${{ github.event.client_payload.name }}"
+          SCORE="${{ github.event.client_payload.score }}"
+          
+          # Use jq to update the leaderboard, sort it, and keep top 10
+          jq ". += [{\"name\": \"$NAME\", \"score\": $SCORE}] | sort_by(.score) | reverse | .[0:10]" leaderboard.json > leaderboard.tmp.json
+          mv leaderboard.tmp.json leaderboard.json
+          
+      - name: Commit and Push
+        run: |
+          git config --global user.name "Galaxy Bot"
+          git config --global user.email "bot@galaxyworld.com"
+          git add leaderboard.json
+          git commit -m "New Highscore: ${{ github.event.client_payload.name }}"
+          git push
