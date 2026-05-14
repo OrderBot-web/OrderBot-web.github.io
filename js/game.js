@@ -253,9 +253,11 @@ class SpaceGame {
     }
 }
 
-// Secret Trigger
+// Secret Trigger (Moved to Brand Name Text)
 let logoClicks = 0;
-document.querySelector('header img').addEventListener('click', () => {
+document.querySelector('header nav a span').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     logoClicks++;
     if (logoClicks >= 5) {
         document.getElementById('game-container').classList.add('active');
