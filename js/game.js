@@ -1,7 +1,8 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Cinematic Earth Launch Edition
+ * Cinematic Earth Launch Edition v5
  */
+console.log("GALAXY WORLD GAME v5 LOADED");
 
 class SpaceGame {
     constructor(canvasId) {
@@ -48,8 +49,8 @@ class SpaceGame {
         
         this.sun = { x: 0, y: 0, size: 25, color: '#FFD700' };
         
-        this.launchState = 'COUNTDOWN'; // COUNTDOWN -> BOOST -> PLAY
-        this.launchTimer = 180; // 3 seconds at 60fps
+        this.launchState = 'COUNTDOWN'; 
+        this.launchTimer = 180; 
 
         this.init();
     }
@@ -98,15 +99,14 @@ class SpaceGame {
         if (this.launchState === 'COUNTDOWN') {
             this.launchTimer--;
             const terra = this.planets.find(p => p.id === 'terra');
-            this.ship.x = terra.x; this.ship.y = terra.y; // Stay locked to Terra
+            this.ship.x = terra.x; this.ship.y = terra.y; 
             if (this.launchTimer <= 0) { this.launchState = 'BOOST'; this.launchTimer = 60; }
             return;
         } else if (this.launchState === 'BOOST') {
             this.launchTimer--;
-            this.ship.vy = -3; // Launch velocity
+            this.ship.vy = -3; 
             this.ship.angle = -Math.PI/2;
-            // Particles
-            if(Math.random() > 0.5) this.particles.push({ x: this.ship.x, y: this.ship.y, vx: (Math.random()-0.5), vy: 2, life: 30, color: '#ff4b2b' });
+            if(Math.random() > 0.4) this.particles.push({ x: this.ship.x, y: this.ship.y, vx: (Math.random()-0.5), vy: 2, life: 30, color: '#ff4b2b' });
             if (this.launchTimer <= 0) { this.launchState = 'PLAY'; }
         }
 
@@ -135,7 +135,7 @@ class SpaceGame {
         this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
         this.ship.vx *= this.friction; this.ship.vy *= this.friction;
 
-        // Particles Update
+        // Particles
         this.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if(p.life <= 0) this.particles.splice(i, 1); });
 
         // Update Planets
@@ -174,9 +174,7 @@ class SpaceGame {
 
     draw() {
         this.bctx.fillStyle = '#020205'; this.bctx.fillRect(0, 0, this.buffer.width, this.buffer.height);
-        this.bctx.save();
-        this.bctx.translate(this.camera.x, this.camera.y);
-        this.bctx.scale(this.camera.zoom, this.camera.zoom);
+        this.bctx.save(); this.bctx.translate(this.camera.x, this.camera.y); this.bctx.scale(this.camera.zoom, this.camera.zoom);
 
         // Sun
         this.bctx.fillStyle = this.sun.color; this.bctx.fillRect(-this.sun.size, -this.sun.size, this.sun.size*2, this.sun.size*2);
@@ -190,12 +188,6 @@ class SpaceGame {
 
         // Particles
         this.particles.forEach(p => { this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x, p.y, 2, 2); });
-
-        // Cities
-        this.outposts.forEach(p => {
-            this.bctx.fillStyle = p.color; this.bctx.fillRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
-            this.bctx.strokeStyle = 'white'; this.bctx.strokeRect(p.x - p.size, p.y - p.size, p.size*2, p.size*2);
-        });
 
         // Ship
         this.bctx.save(); this.bctx.translate(this.ship.x, this.ship.y); this.bctx.rotate(this.ship.angle);
@@ -212,13 +204,7 @@ class SpaceGame {
         }
 
         this.bctx.restore();
-
-        this.ctx.clearRect(0,0,this.width,this.height);
-        this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
-
-        // HUD
-        this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 18px monospace';
-        this.ctx.fillText(`CASH: $${this.credits} | SCORE: ${this.score}`, 20, 40);
+        this.ctx.clearRect(0,0,this.width,this.height); this.ctx.drawImage(this.buffer, 0, 0, this.width, this.height);
     }
 
     gameOver() { this.running = false; location.reload(); }
