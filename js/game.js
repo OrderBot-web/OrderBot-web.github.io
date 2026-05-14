@@ -1,6 +1,6 @@
 /**
  * GALAXY WORLD - Space Economy Arcade Game
- * Building & Economy Update
+ * Fleet & Automation Update
  */
 
 class SpaceGame {
@@ -23,7 +23,8 @@ class SpaceGame {
         this.cargo = [];
         this.maxCargo = 6;
         this.activeCrises = [];
-        this.outposts = []; // Player-built cities
+        this.outposts = []; 
+        this.fleet = []; // PNG Pilots
 
         this.camera = { x: 0, y: 0, zoom: 0.6 };
         this.ship = { x: 450, y: 0, vx: 0, vy: 0, angle: -Math.PI/2, size: 14, mass: 1, color: '#fff' };
@@ -66,6 +67,7 @@ class SpaceGame {
         window.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
             if(e.code === 'KeyB') this.buildOutpost();
+            if(e.code === 'KeyH') this.hirePilot();
         });
         window.addEventListener('keyup', (e) => this.keys[e.code] = false);
 
@@ -75,31 +77,23 @@ class SpaceGame {
 
     buildOutpost() {
         if(!this.running || this.credits < 2000) return;
-        
-        // Check if near any existing planet
-        let nearPlanet = this.planets.find(p => {
-            let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
-            return d < p.size + 100;
-        });
-
+        let nearPlanet = this.planets.find(p => Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2) < p.size + 150);
         if(!nearPlanet) {
-            // Build a space station in open space
-            this.outposts.push({
-                id: 'outpost_' + Date.now(),
-                name: 'STAZIONE ' + (this.outposts.length + 1),
-                x: this.ship.x,
-                y: this.ship.y,
-                size: 15,
-                color: '#9b59b6',
-                resources: ['Ricerca'],
-                demands: ['Energia'],
-                level: 1
-            });
+            this.outposts.push({ id: 'op'+Date.now(), name: 'STAZIONE '+ (this.outposts.length+1), x: this.ship.x, y: this.ship.y, size: 15, color: '#9b59b6', resources: ['Ricerca'], demands: ['Energia'], level: 1 });
             this.credits -= 2000;
-            alert("STAZIONE SPAZIALE COSTRUITA!");
-        } else {
-            alert("TROPPO VICINO A UN PIANETA PER COSTRUIRE!");
         }
+    }
+
+    hirePilot() {
+        if(!this.running || this.credits < 5000) return;
+        // Hiring a pilot that moves from Terra to a random planet
+        const target = this.planets[Math.floor(Math.random() * this.planets.length)];
+        this.fleet.push({
+            x: 0, y: 0, targetId: target.id, progress: 0, speed: 0.005,
+            name: "PILOTA " + (this.fleet.length + 1)
+        });
+        this.credits -= 5000;
+        alert("PILOTA ASSUNTO! Sta consegnando verso " + target.name);
     }
 
     spawnCrisis() {
@@ -132,34 +126,45 @@ class SpaceGame {
         this.ship.vx -= (this.ship.x / dist) * force;
         this.ship.vy -= (this.ship.y / dist) * force;
 
-        this.ship.x += this.ship.vx;
-        this.ship.y += this.ship.vy;
-        this.ship.vx *= this.friction;
-        this.ship.vy *= this.friction;
+        this.ship.x += this.ship.vx; this.ship.y += this.ship.vy;
+        this.ship.vx *= this.friction; this.ship.vy *= this.friction;
 
-        // Update Planets
-        this.planets.forEach(p => {
-            p.angle += p.speed;
-            let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
-            p.x = parent.x + Math.cos(p.angle) * p.dist;
-            p.y = parent.y + Math.sin(p.angle) * p.dist;
-
+        // Planets & Outposts
+        [...this.planets, ...this.outposts].forEach(p => {
+            if(p.speed) { // It's a planet
+                p.angle += p.speed;
+                let parent = p.parent ? this.planets.find(pl => pl.id === p.parent) : this.sun;
+                p.x = parent.x + Math.cos(p.angle) * p.dist;
+                p.y = parent.y + Math.sin(p.angle) * p.dist;
+            }
             let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
             if(d < p.size + 12) this.dock(p);
         });
 
-        // Update Outposts (Static in space for now)
-        this.outposts.forEach(p => {
-            let d = Math.sqrt((p.x - this.ship.x)**2 + (p.y - this.ship.y)**2);
-            if(d < p.size + 12) this.dock(p);
-        });
-
+        // Asteroids
         this.asteroids.forEach(a => {
-            a.angle += a.speed;
-            a.x = Math.cos(a.angle) * a.dist;
-            a.y = Math.sin(a.angle) * a.dist;
+            a.angle += a.speed; a.x = Math.cos(a.angle) * a.dist; a.y = Math.sin(a.angle) * a.dist;
             let d = Math.sqrt((a.x - this.ship.x)**2 + (a.y - this.ship.y)**2);
             if(d < a.size + 5) this.hitAsteroid();
+        });
+
+        // Fleet Automation
+        this.fleet.forEach((pilot, idx) => {
+            pilot.progress += pilot.speed;
+            const target = this.planets.find(p => p.id === pilot.targetId);
+            const terra = this.planets.find(p => p.id === 'terra');
+            
+            // Linear interpolation between Terra and Target
+            pilot.x = terra.x + (target.x - terra.x) * pilot.progress;
+            pilot.y = terra.y + (target.y - terra.y) * pilot.progress;
+
+            if(pilot.progress >= 1) {
+                this.credits += 1500;
+                this.score += 1000;
+                // Re-route
+                pilot.progress = 0;
+                pilot.targetId = this.planets[Math.floor(Math.random() * this.planets.length)].id;
+            }
         });
 
         this.activeCrises.forEach(c => {
@@ -206,93 +211,58 @@ class SpaceGame {
         this.ctx.scale(this.camera.zoom, this.camera.zoom);
 
         // Sun
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, this.sun.size, 0, Math.PI * 2);
-        this.ctx.fillStyle = this.sun.color;
-        this.ctx.shadowBlur = 60; this.ctx.shadowColor = this.sun.color;
-        this.ctx.fill();
-        this.ctx.shadowBlur = 0;
+        this.ctx.beginPath(); this.ctx.arc(0, 0, this.sun.size, 0, Math.PI * 2); this.ctx.fillStyle = this.sun.color; this.ctx.fill();
 
-        // Asteroids
-        this.ctx.fillStyle = '#666';
-        this.asteroids.forEach(a => {
-            this.ctx.beginPath(); this.ctx.arc(a.x, a.y, a.size, 0, Math.PI * 2); this.ctx.fill();
-        });
-
-        // Planets
+        // Planets, Outposts, Asteroids...
         this.planets.forEach(p => {
-            if(p.rings) {
-                this.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-                this.ctx.lineWidth = 10;
-                this.ctx.beginPath();
-                this.ctx.ellipse(p.x, p.y, p.size * 2, p.size * 0.8, p.angle, 0, Math.PI*2);
-                this.ctx.stroke();
-            }
+            if(p.rings) { this.ctx.strokeStyle = 'rgba(255,255,255,0.1)'; this.ctx.lineWidth = 10; this.ctx.beginPath(); this.ctx.ellipse(p.x, p.y, p.size * 2, p.size * 0.8, p.angle, 0, Math.PI*2); this.ctx.stroke(); }
             this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
-            this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 16px Outfit'; this.ctx.textAlign = 'center';
-            this.ctx.fillText(p.name.toUpperCase(), p.x, p.y - p.size - 12);
         });
 
-        // Outposts
         this.outposts.forEach(p => {
             this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fillStyle = p.color; this.ctx.fill();
             this.ctx.strokeStyle = 'white'; this.ctx.lineWidth = 2; this.ctx.stroke();
-            this.ctx.fillStyle = 'white'; this.ctx.font = 'bold 12px Outfit'; this.ctx.textAlign = 'center';
-            this.ctx.fillText(p.name, p.x, p.y - p.size - 8);
+        });
+
+        // Fleet (Pilots)
+        this.fleet.forEach(p => {
+            this.ctx.fillStyle = '#2ecc71';
+            this.ctx.fillRect(p.x - 5, p.y - 5, 10, 10);
+            this.ctx.font = '8px Inter';
+            this.ctx.fillText(p.name, p.x, p.y - 10);
         });
 
         // Ship
-        this.ctx.save();
-        this.ctx.translate(this.ship.x, this.ship.y);
-        this.ctx.rotate(this.ship.angle);
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.ship.size, 0);
-        this.ctx.lineTo(-this.ship.size/2, this.ship.size/2);
-        this.ctx.lineTo(-this.ship.size/2, -this.ship.size/2);
-        this.ctx.closePath();
-        this.ctx.fillStyle = 'white';
-        this.ctx.fill();
-        this.ctx.restore();
+        this.ctx.save(); this.ctx.translate(this.ship.x, this.ship.y); this.ctx.rotate(this.ship.angle);
+        this.ctx.beginPath(); this.ctx.moveTo(this.ship.size, 0); this.ctx.lineTo(-this.ship.size/2, this.ship.size/2); this.ctx.lineTo(-this.ship.size/2, -this.ship.size/2); this.ctx.closePath();
+        this.ctx.fillStyle = 'white'; this.ctx.fill(); this.ctx.restore();
 
         this.ctx.restore();
 
         // HUD
         this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 24px Outfit';
+        this.ctx.font = 'bold 22px Outfit';
         this.ctx.fillText(`$ ${this.credits}`, 40, 60);
-        this.ctx.font = '12px Inter';
-        this.ctx.fillText(`PREMI 'B' PER COSTRUIRE CITTÀ (COSTO: 2000)`, 40, 85);
-        this.ctx.fillText(`STIVA: ${this.cargo.join(', ') || 'VUOTA'}`, 40, 105);
+        this.ctx.font = '11px Inter';
+        this.ctx.fillText(`B: COSTRUISCI (2000) | H: ASSUMI PILOTA (5000)`, 40, 85);
+        this.ctx.fillText(`FLOTTA: ${this.fleet.length} NAVI PNG`, 40, 105);
+        this.ctx.fillText(`STIVA: ${this.cargo.join(', ')}`, 40, 125);
 
         this.activeCrises.forEach((c, idx) => {
             this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
             this.ctx.fillRect(this.width - 260, 30 + idx*70, 230, 60);
             this.ctx.fillStyle = 'white';
-            this.ctx.font = 'bold 13px Inter';
             this.ctx.fillText(`CRISI: ${c.planet.toUpperCase()}`, this.width - 250, 55 + idx*70);
             this.ctx.fillStyle = '#ff4b2b';
             this.ctx.fillRect(this.width - 250, 65 + idx*70, (c.timer/c.maxTime) * 210, 6);
         });
     }
 
-    gameOver(reason) {
-        this.running = false;
-        document.getElementById('game-modal').classList.add('active');
-        document.querySelector('#game-modal h2').innerText = reason;
-    }
+    gameOver(reason) { this.running = false; document.getElementById('game-modal').classList.add('active'); document.querySelector('#game-modal h2').innerText = reason; }
 
-    async submitScore() {
-        const name = document.getElementById('player-name').value.toUpperCase() || "GXY";
-        const btn = document.getElementById('submit-score-btn');
-        btn.innerText = "TRASMISSIONE..."; btn.disabled = true;
-        setTimeout(() => { alert("RECORD INVIATO ALLA TERRA!"); location.reload(); }, 2000);
-    }
+    async submitScore() { location.reload(); }
 
-    loop() {
-        if (!this.running) return;
-        this.update(); this.draw();
-        requestAnimationFrame(() => this.loop());
-    }
+    loop() { if (!this.running) return; this.update(); this.draw(); requestAnimationFrame(() => this.loop()); }
 }
 
 // Secret Trigger
