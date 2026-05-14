@@ -39,7 +39,7 @@ class SpaceGame {
             { id: 'terra', name: 'TERRA', dist: 200, size: 8, color: '#4facfe', speed: 0.005, res: 'CIBO', req: 'METALLI', spec: 'HUB CENTRALE' },
             { id: 'luna', name: 'LUNA', parent: 'terra', dist: 30, size: 3, color: '#bdc3c7', speed: 0.03, res: 'ELIO-3', req: 'CIBO', spec: 'BASSA GRAVITÀ' },
             { id: 'marte', name: 'MARTE', dist: 300, size: 7, color: '#ff4b2b', speed: 0.0035, res: 'FERRO', req: 'ACQUA', spec: 'MINIERA ROSSA' },
-            { id: 'giove', name: 'GIOVE', dist: 450, size: 15, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'ELETTRONICA', spec: 'GIGANTE GAS' },
+            { id: 'giove', name: 'GIOVE', dist: 450, size: 15, color: '#f39c12', speed: 0.0012, res: 'GAS', req: 'ELETTRONICA', spec: 'TEMPESTA ROSSA' },
             { id: 'saturno', name: 'SATURNO', dist: 650, size: 12, color: '#f1c40f', speed: 0.0008, res: 'GHIACCIO', req: 'MEDS', spec: 'ANELLI RARI', rings: true },
             { id: 'urano', name: 'URANO', dist: 900, size: 10, color: '#a29bfe', speed: 0.0005, res: 'DIAMANTI', req: 'GAS', spec: 'VENTI GELIDI' },
             { id: 'nettuno', name: 'NETTUNO', dist: 1200, size: 10, color: '#0984e3', speed: 0.0003, res: 'ENERGIA', req: 'DIAMANTI', spec: 'ABISSO BLU' }
