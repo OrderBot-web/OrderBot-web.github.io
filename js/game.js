@@ -31,6 +31,8 @@ class SpaceGame {
         this.pilots       = [];
         this.showHireMenu = false;
         this.showGuide    = false;
+        this.mobileKeys   = {};
+        this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         this.stars        = this._genStars(260);
         this.sun          = { x: 0, y: 0, size: 32 };
 
@@ -202,49 +204,96 @@ class SpaceGame {
         });
 
         // ── Touch ──────────────────────────────────────────────────────────
-        this.canvas.addEventListener('touchstart', e => {
-            if (e.touches.length===2) {
-                const dx=e.touches[0].clientX-e.touches[1].clientX;
-                const dy=e.touches[0].clientY-e.touches[1].clientY;
-                this._pinchDist = Math.sqrt(dx*dx+dy*dy);
-            }
-            this.isTouching=true; this._handleTouch(e);
-        }, { passive:false });
-
-        this.canvas.addEventListener('touchmove', e => {
-            if (e.touches.length===2) {
-                const dx=e.touches[0].clientX-e.touches[1].clientX;
-                const dy=e.touches[0].clientY-e.touches[1].clientY;
-                const dist=Math.sqrt(dx*dx+dy*dy);
-                if (this._pinchDist>0) {
-                    const factor=dist/this._pinchDist;
-                    const isOver = this.launchState==='CHOOSE_CITY';
-                    this.camera.targetZoom=Math.max(isOver?0.06:0.12, Math.min(isOver?1.2:12, this.camera.targetZoom*factor));
-                }
-                this._pinchDist=dist;
-                e.preventDefault(); return;
-            }
-            this._handleTouch(e);
-        }, { passive:false });
-
-        this.canvas.addEventListener('touchend', e => {
-            this.isTouching=false; this._pinchDist=0;
+        this.canvas.addEventListener('touchstart', e => { this._processTouches(e, true);  }, { passive:false });
+        this.canvas.addEventListener('touchmove',  e => { this._processTouches(e, false); }, { passive:false });
+        this.canvas.addEventListener('touchend',   e => {
+            this._processTouches(e, false);
+            // CHOOSE_CITY: tap on a body (not on a button)
             if (this.launchState==='CHOOSE_CITY' && e.changedTouches[0]) {
-                const t=e.changedTouches[0];
-                const b=this._bodyAtScreen(t.clientX, t.clientY);
-                if (b && b.id!=='terra') {
-                    if (this.selectedBody===b) this._foundCity(b); else this.selectedBody=b;
+                const ct=e.changedTouches[0];
+                if (!this._touchOnButton(ct.clientX, ct.clientY)) {
+                    const b=this._bodyAtScreen(ct.clientX, ct.clientY);
+                    if (b && b.id!=='terra') { if (this.selectedBody===b) this._foundCity(b); else this.selectedBody=b; }
                 }
             }
-        });
+        }, { passive:false });
 
         this.crisisInterval = setInterval(() => { if (this.running && this.launchState==='PLAY') this.spawnCrisis(); }, 13000);
         document.getElementById('submit-score-btn').addEventListener('click', () => this.submitScore());
     }
 
-    _handleTouch(e) {
+    // ── Mobile controls ──────────────────────────────────────────────────────
+
+    _getMobileButtons() {
+        // Recompute only on resize
+        if (this._mbCache && this._mbW===this.width && this._mbH===this.height) return this._mbCache;
+        const s  = Math.min(this.width, this.height);
+        const r  = Math.max(38, s * 0.072);   // base radius, scales with screen
+        const mg = r * 1.05;
+        const by = this.height - mg - r;       // bottom row y
+        this._mbCache = [
+            // Flight controls (only during gameplay)
+            { id:'left',   cx: mg+r,          cy: by,        r,        key:'ArrowLeft',  label:'◀', flight:true  },
+            { id:'right',  cx: mg+r*3.3,      cy: by,        r,        key:'ArrowRight', label:'▶', flight:true  },
+            { id:'thrust', cx: this.width-mg-r*1.15, cy: by, r: r*1.15, key:'ArrowUp',   label:'▲', flight:true  },
+            // Utility (always)
+            { id:'guide',  cx: this.width-mg-r*0.65, cy: mg+r*0.65, r: r*0.62, key:'guide', label:'?', toggle:true },
+            { id:'snap',   cx: this.width-mg-r*0.65-r*1.75, cy: mg+r*0.65, r: r*0.62, key:'snap', label:'G', toggle:true },
+        ];
+        this._mbW=this.width; this._mbH=this.height;
+        return this._mbCache;
+    }
+
+    _touchOnButton(tx, ty) {
+        return this._getMobileButtons().some(b => Math.sqrt((tx-b.cx)**2+(ty-b.cy)**2) < b.r+14);
+    }
+
+    _processTouches(e, isStart) {
         e.preventDefault();
-        if (e.touches.length===1) { const t=e.touches[0]; this.touchPos={x:t.clientX, y:t.clientY}; }
+        this.isTouchDevice = true;  // confirm touch device on first touch
+
+        // Pinch-to-zoom (2 fingers, no button logic)
+        if (e.touches.length >= 2) {
+            const dx=e.touches[0].clientX-e.touches[1].clientX;
+            const dy=e.touches[0].clientY-e.touches[1].clientY;
+            const dist=Math.sqrt(dx*dx+dy*dy);
+            if (this._pinchDist>0) {
+                const factor=dist/this._pinchDist;
+                const isOver=this.launchState==='CHOOSE_CITY';
+                this.camera.targetZoom=Math.max(isOver?0.06:0.12, Math.min(isOver?1.2:12, this.camera.targetZoom*factor));
+            }
+            this._pinchDist=dist;
+            this.mobileKeys={}; this.isTouching=false;
+            return;
+        }
+        this._pinchDist=0;
+
+        const btns=this._getMobileButtons();
+        const newKeys={};
+        let aimTouch=null;
+
+        for (const touch of e.touches) {
+            let hit=null;
+            for (const btn of btns) {
+                if (Math.sqrt((touch.clientX-btn.cx)**2+(touch.clientY-btn.cy)**2) < btn.r+14) { hit=btn; break; }
+            }
+            if (hit) {
+                if (hit.toggle && isStart) {
+                    if (hit.id==='guide') this.showGuide=!this.showGuide;
+                    if (hit.id==='snap')  { this.camera.panX=0; this.camera.panY=0; }
+                } else if (!hit.toggle) {
+                    newKeys[hit.key]=true;
+                }
+            } else if (!aimTouch) {
+                aimTouch=touch;
+            }
+        }
+
+        this.mobileKeys=newKeys;
+        this.isTouching = !!aimTouch && this.launchState==='PLAY';
+        if (aimTouch) this.touchPos={x:aimTouch.clientX, y:aimTouch.clientY};
+        // CHOOSE_CITY hover update
+        if (this.launchState==='CHOOSE_CITY' && aimTouch) this.hoveredBody=this._bodyAtScreen(aimTouch.clientX, aimTouch.clientY);
     }
 
     // ── Coordinate helpers ───────────────────────────────────────────────────
@@ -401,15 +450,16 @@ class SpaceGame {
         // PLAY
         this.ship.mass=1+this.cargo.length*0.3;
         const accel=this.baseAccel/this.ship.mass;
-        if (this.keys['ArrowUp']||this.keys['KeyW']) {
+        const mk=this.mobileKeys;
+        if (this.keys['ArrowUp']||this.keys['KeyW']||mk['ArrowUp']) {
             this.ship.vx+=Math.cos(this.ship.angle)*accel;
             this.ship.vy+=Math.sin(this.ship.angle)*accel;
             this._particle(this.ship.x,this.ship.y,
                 -Math.cos(this.ship.angle)*0.5+(Math.random()-0.5)*0.3,
                 -Math.sin(this.ship.angle)*0.5+(Math.random()-0.5)*0.3,'#e17055',16);
         }
-        if (this.keys['ArrowLeft']||this.keys['KeyA'])  this.ship.angle-=0.065;
-        if (this.keys['ArrowRight']||this.keys['KeyD']) this.ship.angle+=0.065;
+        if (this.keys['ArrowLeft']||this.keys['KeyA']||mk['ArrowLeft'])  this.ship.angle-=0.065;
+        if (this.keys['ArrowRight']||this.keys['KeyD']||mk['ArrowRight']) this.ship.angle+=0.065;
         if (this.isTouching && this.touchPos) {
             const wx=(this.touchPos.x-this.camera.x)/this.camera.zoom;
             const wy=(this.touchPos.y-this.camera.y)/this.camera.zoom;
@@ -661,6 +711,7 @@ class SpaceGame {
 
     _drawChooseCityHUD() {
         const c=this.ctx;
+        if (this.isTouchDevice) this._drawMobileButtons();
         c.fillStyle='rgba(6,7,15,0.88)'; c.fillRect(0,0,this.width,115);
         c.strokeStyle='rgba(249,202,36,0.25)'; c.lineWidth=1;
         c.beginPath(); c.moveTo(0,115); c.lineTo(this.width,115); c.stroke();
@@ -734,6 +785,9 @@ class SpaceGame {
             this._pendingShipArrow = null;
         }
 
+        // Mobile on-screen buttons
+        if (this.isTouchDevice) this._drawMobileButtons();
+
         // Hire menu
         if (this.showHireMenu) {
             const mw=440,mh=282,mx=this.width/2-mw/2,my=this.height/2-mh/2;
@@ -764,6 +818,55 @@ class SpaceGame {
         c.restore();
         c.fillStyle='rgba(255,255,255,0.35)'; c.font='10px "Inter",sans-serif'; c.textAlign='center';
         c.fillText('NAVE', ax, ay+18);
+    }
+
+    _drawMobileButtons() {
+        const c   = this.ctx;
+        const btns = this._getMobileButtons();
+        const isPlay = ['PLAY','COUNTDOWN','BOOST'].includes(this.launchState);
+
+        btns.forEach(btn => {
+            if (btn.flight && !isPlay) return; // hide flight buttons outside gameplay
+
+            const pressed = !!this.mobileKeys[btn.key];
+            // Active toggle state
+            const active = (btn.id==='guide' && this.showGuide);
+
+            // Outer glow when pressed
+            if (pressed || active) {
+                c.beginPath(); c.arc(btn.cx, btn.cy, btn.r*1.55, 0, Math.PI*2);
+                c.fillStyle = btn.flight
+                    ? (btn.id==='thrust' ? 'rgba(249,202,36,0.15)' : 'rgba(162,155,254,0.15)')
+                    : 'rgba(255,255,255,0.12)';
+                c.fill();
+            }
+
+            // Button body
+            c.beginPath(); c.arc(btn.cx, btn.cy, btn.r, 0, Math.PI*2);
+            let bg;
+            if (pressed || active) {
+                bg = btn.flight
+                    ? (btn.id==='thrust' ? 'rgba(249,202,36,0.55)' : 'rgba(162,155,254,0.55)')
+                    : 'rgba(255,255,255,0.35)';
+            } else {
+                bg = 'rgba(6,7,15,0.55)';
+            }
+            c.fillStyle = bg; c.fill();
+
+            // Border
+            c.strokeStyle = pressed || active
+                ? (btn.flight ? (btn.id==='thrust' ? 'rgba(249,202,36,0.9)' : 'rgba(162,155,254,0.9)') : 'rgba(255,255,255,0.8)')
+                : 'rgba(255,255,255,0.22)';
+            c.lineWidth = 1.5; c.stroke();
+
+            // Label
+            c.fillStyle  = pressed || active ? '#fff' : 'rgba(255,255,255,0.6)';
+            c.font       = `bold ${Math.round(btn.r * 0.68)}px "Inter",sans-serif`;
+            c.textAlign  = 'center';
+            c.textBaseline = 'middle';
+            c.fillText(btn.label, btn.cx, btn.cy);
+            c.textBaseline = 'alphabetic';
+        });
     }
 
     // ── Guide overlay ─────────────────────────────────────────────────────────
