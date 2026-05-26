@@ -11,116 +11,92 @@
     <link rel="stylesheet" href="css/style.css"/>
 
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             background:
-                radial-gradient(circle at top right, rgba(157,80,187,0.28), transparent 32%),
-                radial-gradient(circle at center left, rgba(110,72,170,0.20), transparent 35%),
+                radial-gradient(circle at top right, rgba(157,80,187,0.32), transparent 34%),
+                radial-gradient(circle at center left, rgba(110,72,170,0.24), transparent 36%),
                 #05040a;
         }
 
-        .premium-navbar {
-            width: min(92%, 1120px);
-            margin: 24px auto 0;
-            padding: 14px 18px;
-            border-radius: 30px;
+        .gw-header {
+            position: sticky;
+            top: 12px;
+            z-index: 9999;
+            padding: 0 14px;
+        }
+
+        .gw-navbar {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 12px 14px;
+            border-radius: 26px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(18, 10, 30, 0.82);
-            border: 1px solid rgba(176,108,255,0.30);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            box-shadow: 0 14px 50px rgba(0,0,0,0.45), inset 0 0 30px rgba(176,108,255,0.08);
-            position: relative;
-            z-index: 1000;
+            background: rgba(12, 8, 22, 0.86);
+            border: 1px solid rgba(176,108,255,0.35);
+            backdrop-filter: blur(26px);
+            -webkit-backdrop-filter: blur(26px);
+            box-shadow: 0 18px 60px rgba(0,0,0,0.45), inset 0 0 30px rgba(176,108,255,0.08);
         }
 
-        .brand-box {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            text-decoration: none;
-            color: white;
-            position: relative;
-        }
-
-        .brand-box img {
-            width: 56px;
-            height: 56px;
-            border-radius: 18px;
-            object-fit: cover;
-            box-shadow: 0 0 28px rgba(176,108,255,0.35);
-        }
-
-        .brand-title {
-            font-size: 1.7rem;
-            font-weight: 900;
-            line-height: 0.95;
-            letter-spacing: -1px;
-        }
-
-        .nav-links {
+        .gw-brand {
             display: flex;
             align-items: center;
             gap: 12px;
+            text-decoration: none;
+            color: white;
+            position: relative;
         }
 
-        .nav-links a,
-        .mobile-menu a {
+        .gw-brand img {
+            width: 48px;
+            height: 48px;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 0 24px rgba(176,108,255,0.38);
+        }
+
+        .gw-brand span {
+            font-size: 1.15rem;
+            line-height: 0.95;
+            font-weight: 950;
+            letter-spacing: -0.5px;
+        }
+
+        .gw-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gw-links a {
             color: white;
             text-decoration: none;
+            font-weight: 800;
             padding: 12px 18px;
             border-radius: 16px;
             background: rgba(255,255,255,0.045);
-            border: 1px solid rgba(255,255,255,0.09);
-            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.10);
         }
 
-        .nav-links a:hover,
-        .mobile-menu a:hover {
-            background: rgba(157,80,187,0.22);
-            border-color: rgba(176,108,255,0.45);
+        .gw-links a:last-child {
+            background: linear-gradient(135deg, #9d50bb, #b06cff);
+            box-shadow: 0 0 28px rgba(176,108,255,0.35);
         }
 
-        .nav-cta {
-            background: linear-gradient(135deg,#9d50bb,#b06cff) !important;
-            box-shadow: 0 0 30px rgba(176,108,255,0.35);
-        }
-
-        #mobile-menu-btn {
-            width: 58px;
-            height: 58px;
-            border-radius: 18px;
-            background: rgba(157,80,187,0.14);
+        .gw-menu-btn {
+            display: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 17px;
             border: 1px solid rgba(176,108,255,0.35);
+            background: rgba(157,80,187,0.16);
             color: white;
-            font-size: 1.4rem;
-            display: none;
-            align-items: center;
-            justify-content: center;
+            font-size: 1.35rem;
             cursor: pointer;
-        }
-
-        .mobile-menu {
-            display: none;
-            width: min(92%, 1120px);
-            margin: 12px auto 0;
-            padding: 14px;
-            border-radius: 24px;
-            background: rgba(18,10,30,0.92);
-            border: 1px solid rgba(176,108,255,0.28);
-            backdrop-filter: blur(20px);
-            position: relative;
-            z-index: 999;
-        }
-
-        .mobile-menu.show {
-            display: grid;
-            gap: 10px;
         }
 
         .hero-layout {
@@ -128,7 +104,16 @@
             grid-template-columns: 1fr 0.85fr;
             gap: 40px;
             align-items: center;
-            padding-top: 110px;
+            padding-top: 90px;
+        }
+
+        .section-title {
+            color: #b06cff;
+            letter-spacing: 7px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            font-weight: 900;
+            margin-bottom: 24px;
         }
 
         .hero-title {
@@ -152,7 +137,7 @@
             align-items: center;
             gap: 12px;
             color: var(--apple-text-muted);
-            font-weight: 700;
+            font-weight: 800;
         }
 
         .online-dot {
@@ -194,6 +179,20 @@
             padding: 38px;
         }
 
+        .feature-icon-new {
+            width: 68px;
+            height: 68px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b06cff;
+            font-size: 1.7rem;
+            background: rgba(157,80,187,0.18);
+            border: 1px solid rgba(176,108,255,0.35);
+            margin-bottom: 26px;
+        }
+
         .service-button {
             width: 100%;
             display: flex;
@@ -214,15 +213,6 @@
             box-shadow: 0 0 35px rgba(157,80,187,0.36);
         }
 
-        .section-title {
-            color: #b06cff;
-            letter-spacing: 7px;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            font-weight: 900;
-            margin-bottom: 24px;
-        }
-
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -235,20 +225,6 @@
             border: 1px solid rgba(176,108,255,0.22);
             background: linear-gradient(180deg, rgba(25,18,40,0.82), rgba(8,7,15,0.95));
             box-shadow: 0 22px 60px rgba(0,0,0,0.30);
-        }
-
-        .feature-icon-new {
-            width: 68px;
-            height: 68px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #b06cff;
-            font-size: 1.7rem;
-            background: rgba(157,80,187,0.18);
-            border: 1px solid rgba(176,108,255,0.35);
-            margin-bottom: 26px;
         }
 
         .feature-stat {
@@ -302,31 +278,49 @@
             font-weight: 800;
         }
 
-        @media (max-width: 900px) {
-            .nav-links {
+        @media (max-width: 850px) {
+            .gw-links {
                 display: none;
+                position: absolute;
+                top: 82px;
+                left: 14px;
+                right: 14px;
+                padding: 14px;
+                border-radius: 22px;
+                background: rgba(12,8,22,0.95);
+                border: 1px solid rgba(176,108,255,0.30);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                box-shadow: 0 18px 60px rgba(0,0,0,0.45);
             }
 
-            #mobile-menu-btn {
+            .gw-links.show {
+                display: grid;
+                gap: 10px;
+            }
+
+            .gw-links a {
+                text-align: center;
+                padding: 15px;
+            }
+
+            .gw-menu-btn {
                 display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .hero-layout {
                 grid-template-columns: 1fr;
-                padding-top: 75px;
+                padding-top: 55px;
             }
 
             .hero-title {
                 font-size: clamp(4rem, 17vw, 6rem);
             }
 
-            .brand-title {
-                font-size: 1.25rem;
-            }
-
-            .brand-box img {
-                width: 50px;
-                height: 50px;
+            .hero-lead {
+                font-size: 1.15rem;
             }
         }
     </style>
@@ -340,34 +334,24 @@
         <div class="bg-circle circle-3"></div>
     </div>
 
-    <header>
-        <nav class="premium-navbar">
-            <a href="/" class="brand-box">
-                <img src="img/logo.png" alt="Logo">
-                <div class="brand-title">
-                    GALAXY<br>WORLD
-                </div>
+    <header class="gw-header">
+        <nav class="gw-navbar">
+            <a href="/" class="gw-brand">
+                <img src="img/logo.png" alt="Galaxy World">
+                <span>GALAXY<br>WORLD</span>
                 <div id="secret-trigger" style="position:absolute; inset:0; z-index:10;"></div>
             </a>
 
-            <div class="nav-links">
+            <div class="gw-links" id="gw-links">
                 <a href="#our-service">Our Service</a>
                 <a href="donazioni.html">Support</a>
-                <a href="https://discord.gg/KxhZWFJvDE" class="nav-cta">
-                    <i class="fa-brands fa-discord"></i> Inizia il Viaggio
-                </a>
+                <a href="https://discord.gg/KxhZWFJvDE">Discord</a>
             </div>
 
-            <button id="mobile-menu-btn">
+            <button class="gw-menu-btn" id="gw-menu-btn">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </nav>
-
-        <div id="mobile-menu" class="mobile-menu">
-            <a href="#our-service">Our Service</a>
-            <a href="donazioni.html">Support</a>
-            <a href="https://discord.gg/KxhZWFJvDE">Inizia il Viaggio</a>
-        </div>
     </header>
 
     <main class="container">
@@ -375,7 +359,9 @@
         <section class="hero-layout">
             <div>
                 <p class="section-title">L'universo ti aspetta</p>
+
                 <h1 class="hero-title">Galaxy<br>World</h1>
+
                 <p class="hero-lead">
                     L'universo definitivo per la community italiana di Discord.
                     Un luogo dove l'esplorazione, i servizi e il divertimento non finiscono mai.
@@ -389,13 +375,15 @@
 
             <section id="our-service" class="service-card">
                 <div class="service-card-content">
-                    <p class="section-title" style="text-align:right; margin-bottom: 24px;">Our Service</p>
+                    <p class="section-title" style="text-align:right; margin-bottom:24px;">Our Service</p>
 
                     <div class="feature-icon-new">
                         <i class="fa-solid fa-bolt"></i>
                     </div>
 
-                    <h2 style="font-size:2.8rem; line-height:1; margin-bottom:20px;">Galaxy<br>System</h2>
+                    <h2 style="font-size:2.8rem; line-height:1; margin-bottom:20px;">
+                        Galaxy<br>System
+                    </h2>
 
                     <p style="color:var(--apple-text-muted); line-height:1.7; font-size:1.05rem; margin-bottom:26px;">
                         Strumenti avanzati, dashboard e funzioni esclusive per gestire la community in modo professionale.
@@ -519,7 +507,7 @@
             <div class="views-pill">
                 <span>Views</span>
                 <i class="fa-regular fa-eye" style="color:#b06cff;"></i>
-                <span id="view-counter">0</span>
+                <span id="view-counter">...</span>
             </div>
         </section>
 
@@ -556,35 +544,30 @@
     <script src="js/game.js?v=7"></script>
 
     <script>
-        const mobileBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+        const gwMenuBtn = document.getElementById('gw-menu-btn');
+        const gwLinks = document.getElementById('gw-links');
 
-        mobileBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('show');
+        gwMenuBtn.addEventListener('click', () => {
+            gwLinks.classList.toggle('show');
         });
 
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                mobileMenu.classList.remove('show');
-
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+        document.querySelectorAll('.gw-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                gwLinks.classList.remove('show');
             });
         });
 
-        function updateViews() {
-            let views = localStorage.getItem('galaxy_world_views');
+        async function updateViews() {
+            try {
+                const response = await fetch('views.php');
+                const data = await response.json();
 
-            if (!views) {
-                views = 12345;
+                document.getElementById('view-counter').textContent =
+                    Number(data.views).toLocaleString('it-IT');
+            } catch (e) {
+                document.getElementById('view-counter').textContent = 'N/D';
+                console.error('Errore views:', e);
             }
-
-            views = parseInt(views) + 1;
-            localStorage.setItem('galaxy_world_views', views);
-
-            document.getElementById('view-counter').textContent = views.toLocaleString('it-IT');
         }
 
         updateViews();
