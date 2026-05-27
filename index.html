@@ -15,6 +15,40 @@
     <link rel="stylesheet" href="css/style.css"/>
 
     <style>
+        .lang-switch {
+            position: fixed;
+            top: 22px;
+            right: 22px;
+            z-index: 1500;
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 999px;
+            background: rgba(18,18,23,0.72);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.45);
+        }
+
+        .lang-switch button {
+            border: none;
+            cursor: pointer;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: transparent;
+            color: var(--apple-text-muted);
+            font-weight: 800;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+        }
+
+        .lang-switch button.active {
+            background: linear-gradient(135deg, #9d50bb, #6e48aa);
+            color: white;
+            box-shadow: 0 0 20px rgba(157,80,187,0.35);
+        }
+
         .service-card {
             padding: 42px 36px;
             border-radius: 38px;
@@ -157,6 +191,11 @@
         }
 
         @media (max-width: 768px) {
+            .lang-switch {
+                top: 14px;
+                right: 14px;
+            }
+
             .service-card {
                 padding: 34px 26px;
             }
@@ -170,6 +209,11 @@
 
 <body>
 
+    <div class="lang-switch">
+        <button id="lang-it" class="active" onclick="setLanguage('it')">ITA</button>
+        <button id="lang-en" onclick="setLanguage('en')">ENG</button>
+    </div>
+
     <div class="bg-mesh">
         <div class="bg-circle circle-1"></div>
         <div class="bg-circle circle-2"></div>
@@ -178,21 +222,19 @@
 
     <main class="container">
 
-        <!-- Hero Section -->
         <section class="text-center mt-100 fade-up" style="animation-delay: 0.3s; padding-top: 80px;">
-            <p style="color: var(--apple-purple); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 1rem;">
+            <p id="hero-kicker" style="color: var(--apple-purple); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 1rem;">
                 L'universo ti aspetta
             </p>
 
             <h1>Galaxy World</h1>
 
-            <p class="lead">
+            <p id="hero-lead" class="lead">
                 L'universo definitivo per la community italiana di Discord. <br>
                 Un luogo dove l'esplorazione e il divertimento non finiscono mai.
             </p>
         </section>
 
-        <!-- Our Service Section -->
         <section id="our-service" class="mt-100 fade-up" style="animation-delay: 0.35s;">
             <div class="service-card">
                 <div class="service-inner">
@@ -207,12 +249,12 @@
                         </div>
                     </div>
 
-                    <h2 class="service-title">
+                    <h2 id="service-title" class="service-title">
                         Gestisci con precisione.<br>
                         <span>Vivi la community.</span>
                     </h2>
 
-                    <p class="service-text">
+                    <p id="service-text" class="service-text">
                         Accedi al nostro service ufficiale Galaxy System: strumenti, dashboard e funzioni dedicate alla gestione della community Galaxy World.
                     </p>
 
@@ -225,7 +267,7 @@
                             <i class="fa-solid fa-heart" style="margin-right: 10px;"></i> Support
                         </a>
 
-                        <a href="https://discord.gg/KxhZWFJvDE" class="btn-secondary service-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);">
+                        <a id="journey-btn" href="https://discord.gg/KxhZWFJvDE" class="btn-secondary service-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);">
                             <i class="fa-brands fa-discord" style="margin-right: 10px;"></i> Inizia il Viaggio
                         </a>
                     </div>
@@ -233,19 +275,18 @@
             </div>
         </section>
 
-        <!-- Live Feed Section -->
         <section id="announcement-section" class="mt-100 fade-up" style="animation-delay: 0.4s; display: none;">
             <div class="glass-premium" style="padding: 40px; border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.1); max-width: 800px; margin: 0 auto; position: relative; overflow: hidden;">
                 <div style="position: absolute; top: 25px; right: 30px; display: flex; align-items: center; gap: 8px;">
                     <span class="live-dot" style="width: 8px; height: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #2ecc71;"></span>
-                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #2ecc71; font-weight: 700;">Live Feed</span>
+                    <span id="feed-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #2ecc71; font-weight: 700;">Live Feed</span>
                 </div>
 
                 <div style="display: flex; gap: 24px; align-items: flex-start; text-align: left;">
                     <div id="announcement-color-bar" style="width: 5px; min-height: 80px; align-self: stretch; background: var(--apple-purple); border-radius: 4px;"></div>
 
                     <div style="flex: 1;">
-                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--apple-purple); letter-spacing: 2px; font-weight: 800; margin-bottom: 8px;">Messaggio dallo Spazio</h4>
+                        <h4 id="space-message" style="font-size: 0.8rem; text-transform: uppercase; color: var(--apple-purple); letter-spacing: 2px; font-weight: 800; margin-bottom: 8px;">Messaggio dallo Spazio</h4>
                         <h2 id="announcement-title" style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 12px; line-height: 1.2;">Caricamento annuncio...</h2>
                         <p id="announcement-desc" style="color: var(--apple-text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 24px; white-space: pre-wrap;"></p>
 
@@ -255,7 +296,7 @@
                                 <span id="announcement-btn-text">Visita</span>
                             </a>
 
-                            <a href="https://discord.gg/KxhZWFJvDE" class="btn-secondary" style="padding: 10px 24px; font-size: 14px;">
+                            <a id="bot-support-btn" href="https://discord.gg/KxhZWFJvDE" class="btn-secondary" style="padding: 10px 24px; font-size: 14px;">
                                 <i class="fa-brands fa-discord" style="margin-right: 8px;"></i>
                                 Bot Info & Supporto
                             </a>
@@ -265,15 +306,14 @@
             </div>
         </section>
 
-        <!-- Features Section -->
         <section id="features" class="mt-100 fade-up" style="animation-delay: 0.5s; padding-bottom: 100px;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
                 <div class="glass-premium feature-card">
                     <div class="icon-wrapper">
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 15px;">Crescita Stellare</h3>
-                    <p style="color: var(--apple-text-muted);">
+                    <h3 id="feature-1-title" style="font-size: 1.5rem; margin-bottom: 15px;">Crescita Stellare</h3>
+                    <p id="feature-1-text" style="color: var(--apple-text-muted);">
                         Una community in continua espansione, con nuovi membri, attività e opportunità ogni giorno.
                     </p>
                 </div>
@@ -282,8 +322,8 @@
                     <div class="icon-wrapper">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </div>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 15px;">Eventi Premium</h3>
-                    <p style="color: var(--apple-text-muted);">
+                    <h3 id="feature-2-title" style="font-size: 1.5rem; margin-bottom: 15px;">Eventi Premium</h3>
+                    <p id="feature-2-text" style="color: var(--apple-text-muted);">
                         Giveaway, contest e iniziative speciali per premiare i membri più presenti e coinvolti.
                     </p>
                 </div>
@@ -292,8 +332,8 @@
                     <div class="icon-wrapper">
                         <i class="fa-solid fa-robot"></i>
                     </div>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 15px;">Bot & Sistemi</h3>
-                    <p style="color: var(--apple-text-muted);">
+                    <h3 id="feature-3-title" style="font-size: 1.5rem; margin-bottom: 15px;">Bot & Sistemi</h3>
+                    <p id="feature-3-text" style="color: var(--apple-text-muted);">
                         Automazioni, bot esclusivi e sistemi di intrattenimento pensati per rendere tutto più fluido.
                     </p>
                 </div>
@@ -303,32 +343,32 @@
                 <div class="stat-item">
                     <i class="fa-solid fa-users"></i>
                     <strong>1.248+</strong>
-                    <span>Membri Attivi</span>
+                    <span id="stat-members">Membri Attivi</span>
                 </div>
 
                 <div class="stat-item">
                     <i class="fa-solid fa-comments"></i>
                     <strong>12.354+</strong>
-                    <span>Messaggi Oggi</span>
+                    <span id="stat-messages">Messaggi Oggi</span>
                 </div>
 
                 <div class="stat-item">
                     <i class="fa-solid fa-arrow-trend-up"></i>
                     <strong>98%</strong>
-                    <span>Uptime Bot</span>
+                    <span id="stat-uptime">Uptime Bot</span>
                 </div>
 
                 <div class="stat-item">
                     <i class="fa-regular fa-star"></i>
                     <strong>4.8/5</strong>
-                    <span>Valutazione Server</span>
+                    <span id="stat-rating">Valutazione Server</span>
                 </div>
             </div>
 
             <div class="views-pill">
                 <span>Views</span>
                 <i class="fa-regular fa-eye" style="color:#b06cff;"></i>
-                <span id="view-counter">12.345</span>
+                <span id="view-counter">...</span>
             </div>
         </section>
 
@@ -368,21 +408,103 @@
     <script src="js/game.js?v=7"></script>
 
     <script>
-        function fakeViews() {
-            const counter = document.getElementById('view-counter');
-            let views = localStorage.getItem('galaxy_fake_views');
-
-            if (!views) {
-                views = 12345;
+        const translations = {
+            it: {
+                heroKicker: "L'universo ti aspetta",
+                heroLead: "L'universo definitivo per la community italiana di Discord. <br> Un luogo dove l'esplorazione e il divertimento non finiscono mai.",
+                serviceTitle: "Gestisci con precisione.<br><span>Vivi la community.</span>",
+                serviceText: "Accedi al nostro service ufficiale Galaxy System: strumenti, dashboard e funzioni dedicate alla gestione della community Galaxy World.",
+                journeyBtn: '<i class="fa-brands fa-discord" style="margin-right: 10px;"></i> Inizia il Viaggio',
+                spaceMessage: "Messaggio dallo Spazio",
+                loading: "Caricamento annuncio...",
+                visit: "Visita",
+                botSupport: '<i class="fa-brands fa-discord" style="margin-right: 8px;"></i> Bot Info & Supporto',
+                f1Title: "Crescita Stellare",
+                f1Text: "Una community in continua espansione, con nuovi membri, attività e opportunità ogni giorno.",
+                f2Title: "Eventi Premium",
+                f2Text: "Giveaway, contest e iniziative speciali per premiare i membri più presenti e coinvolti.",
+                f3Title: "Bot & Sistemi",
+                f3Text: "Automazioni, bot esclusivi e sistemi di intrattenimento pensati per rendere tutto più fluido.",
+                members: "Membri Attivi",
+                messages: "Messaggi Oggi",
+                uptime: "Uptime Bot",
+                rating: "Valutazione Server"
+            },
+            en: {
+                heroKicker: "The universe is waiting",
+                heroLead: "The ultimate universe for the Italian Discord community. <br> A place where exploration and fun never end.",
+                serviceTitle: "Manage with precision.<br><span>Live the community.</span>",
+                serviceText: "Access our official Galaxy System service: tools, dashboards and dedicated features for managing the Galaxy World community.",
+                journeyBtn: '<i class="fa-brands fa-discord" style="margin-right: 10px;"></i> Start the Journey',
+                spaceMessage: "Message from Space",
+                loading: "Loading announcement...",
+                visit: "Visit",
+                botSupport: '<i class="fa-brands fa-discord" style="margin-right: 8px;"></i> Bot Info & Support',
+                f1Title: "Stellar Growth",
+                f1Text: "A constantly expanding community, with new members, activities and opportunities every day.",
+                f2Title: "Premium Events",
+                f2Text: "Giveaways, contests and special initiatives to reward the most active and involved members.",
+                f3Title: "Bots & Systems",
+                f3Text: "Automations, exclusive bots and entertainment systems designed to make everything smoother.",
+                members: "Active Members",
+                messages: "Messages Today",
+                uptime: "Bot Uptime",
+                rating: "Server Rating"
             }
+        };
 
-            views = Number(views) + 1;
-            localStorage.setItem('galaxy_fake_views', views);
+        function setLanguage(lang) {
+            localStorage.setItem('galaxy_lang', lang);
+            document.documentElement.lang = lang;
 
-            counter.textContent = views.toLocaleString('it-IT');
+            const t = translations[lang];
+
+            document.getElementById('lang-it').classList.toggle('active', lang === 'it');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+            document.getElementById('hero-kicker').textContent = t.heroKicker;
+            document.getElementById('hero-lead').innerHTML = t.heroLead;
+            document.getElementById('service-title').innerHTML = t.serviceTitle;
+            document.getElementById('service-text').textContent = t.serviceText;
+            document.getElementById('journey-btn').innerHTML = t.journeyBtn;
+            document.getElementById('space-message').textContent = t.spaceMessage;
+            document.getElementById('announcement-title').textContent = t.loading;
+            document.getElementById('announcement-btn-text').textContent = t.visit;
+            document.getElementById('bot-support-btn').innerHTML = t.botSupport;
+            document.getElementById('feature-1-title').textContent = t.f1Title;
+            document.getElementById('feature-1-text').textContent = t.f1Text;
+            document.getElementById('feature-2-title').textContent = t.f2Title;
+            document.getElementById('feature-2-text').textContent = t.f2Text;
+            document.getElementById('feature-3-title').textContent = t.f3Title;
+            document.getElementById('feature-3-text').textContent = t.f3Text;
+            document.getElementById('stat-members').textContent = t.members;
+            document.getElementById('stat-messages').textContent = t.messages;
+            document.getElementById('stat-uptime').textContent = t.uptime;
+            document.getElementById('stat-rating').textContent = t.rating;
         }
 
-        fakeViews();
+        const savedLang = localStorage.getItem('galaxy_lang') || 'it';
+        setLanguage(savedLang);
+
+        async function updateViews() {
+            const counter = document.getElementById('view-counter');
+
+            try {
+                const response = await fetch('https://api.countapi.xyz/hit/galaxy-world-community/homepage');
+
+                if (!response.ok) {
+                    throw new Error('Views API error');
+                }
+
+                const data = await response.json();
+                counter.textContent = Number(data.value).toLocaleString('it-IT');
+            } catch (e) {
+                counter.textContent = 'N/D';
+                console.error('Errore views:', e);
+            }
+        }
+
+        updateViews();
 
         async function loadAnnouncement() {
             const section = document.getElementById('announcement-section');
@@ -431,7 +553,7 @@
 
                 if (data.link) {
                     btnEl.href = data.link;
-                    btnTextEl.textContent = data.link_testo || 'Visita';
+                    btnTextEl.textContent = translations[localStorage.getItem('galaxy_lang') || 'it'].visit;
                     btnEl.style.display = 'inline-flex';
                 } else {
                     btnEl.style.display = 'none';
