@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/is-a-dev/register/main/schemas/domain.json",
+    "description": "Galaxy Bot - DMARC",
+    "domain": "_dmarc.galaxy",
+    "owner": {
+        "username": "amogaddyofficial",
+        "email": "amogaddyofficial@gmail.com"
+    },
+    "record": {
+        "TXT": [
+            "v=DMARC1; p=none;"
+        ]
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "$schema": "https://raw.githubusercontent.com/is-a-dev/register/main/schemas/domain.json",
+    "description": "Galaxy Bot - main site & game",
+    "domain": "galaxy",
+    "owner": {
+        "username": "amogaddyofficial",
+        "email": "amogaddyofficial@gmail.com"
+    },
+    "record": {
+        "CNAME": "orderbot-web.github.io"
+    }
+}
