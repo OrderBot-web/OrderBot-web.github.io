@@ -428,7 +428,7 @@ class ClawMachineGame {
         c.fillStyle = '#f9ca24';
         c.font = 'bold 28px "Inter", system-ui';
         c.textAlign = 'center';
-        c.fillText('              🎰  MACCHINA A GANCIO', this.width / 2, 45);
+        c.fillText('       🎰  MACCHINA A GANCIO', this.width / 2, 45);
         c.textAlign = 'left';
 
         c.fillStyle = '#55efc4';
