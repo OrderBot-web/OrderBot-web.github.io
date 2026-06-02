@@ -40,16 +40,17 @@ class ClawMachineGame {
         this.keys = {};
         this.mobileKeys = {};
 
-        const mw = Math.min(680, this.width * 0.92);
+        // Macchina più grande e centrata
+        const mw = Math.min(720, this.width * 0.88);
         this.machine = {
             width: mw,
-            height: Math.min(560, this.height * 0.72),
+            height: Math.min(580, this.height * 0.75),
             left: (this.width - mw) / 2,
-            top: 75,
-            glassLeft: (this.width - mw) / 2 + 15,
-            glassTop: 110,
-            glassW: mw - 30,
-            glassH: Math.min(410, this.height * 0.55)
+            top: 85,
+            glassLeft: (this.width - mw) / 2 + 12,
+            glassTop: 125,
+            glassW: mw - 24,
+            glassH: Math.min(430, this.height * 0.58)
         };
 
         this._genPrizes();
@@ -417,9 +418,18 @@ class ClawMachineGame {
     _drawHUD(c) {
         c.fillStyle = 'rgba(15,18,28,0.95)';
         c.fillRect(0, 0, this.width, 68);
+        c.strokeStyle = 'rgba(249,202,36,0.3)';
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(0, 68);
+        c.lineTo(this.width, 68);
+        c.stroke();
+
         c.fillStyle = '#f9ca24';
-        c.font = 'bold 26px "Inter", system-ui';
-        c.fillText('🎰  MACCHINA A GANCIO', 30, 42);
+        c.font = 'bold 28px "Inter", system-ui';
+        c.textAlign = 'center';
+        c.fillText('🎰  MACCHINA A GANCIO', this.width / 2, 45);
+        c.textAlign = 'left';
 
         c.fillStyle = '#55efc4';
         c.font = 'bold 20px "Inter", system-ui';
@@ -432,24 +442,35 @@ class ClawMachineGame {
         const bx = this.width - 240, by = this.height - 155;
         const canPlay = this.claw.state === 'IDLE' && (this.attemptsLeft > 0 || this.credits >= 150);
         c.fillStyle = canPlay ? '#f9ca24' : '#555';
-        c.fillRect(bx, by, 210, 85);
+        c.beginPath();
+        c.roundRect(bx, by, 210, 85, 18);
+        c.fill();
         c.strokeStyle = canPlay ? '#fff' : '#777';
         c.lineWidth = 4;
-        c.strokeRect(bx, by, 210, 85);
+        c.stroke();
+
         c.fillStyle = canPlay ? '#111' : '#aaa';
         c.font = 'bold 18px "Inter", system-ui';
+        c.textAlign = 'center';
 
         let btnText = 'LANCIA IL GANCIO';
         if (this.attemptsLeft === 0 && this.credits >= 150) btnText = 'COMPRA TIRO (150$)';
         if (!canPlay && this.attemptsLeft === 0 && this.credits < 150) btnText = 'CREDITI BASSI';
         c.fillText(btnText, bx + 105, by + 38);
 
+        c.font = '13px "Inter", system-ui';
+        c.fillText(canPlay ? 'SPAZIO o TAP qui' : '', bx + 105, by + 60);
+
+        // Pulsante Torna alla HUB - rotondo
         const closeW = Math.min(190, this.width * 0.45);
         c.fillStyle = 'rgba(35,35,45,0.92)';
-        c.fillRect(20, this.height - 88, closeW, 52);
+        c.beginPath();
+        c.roundRect(20, this.height - 88, closeW, 52, 16);
+        c.fill();
         c.strokeStyle = '#ff6b6b';
         c.lineWidth = 3;
-        c.strokeRect(20, this.height - 88, closeW, 52);
+        c.stroke();
+
         c.fillStyle = '#ff6b6b';
         c.font = `bold ${closeW > 150 ? 15 : 13}px "Inter", system-ui`;
         c.textAlign = 'center';
