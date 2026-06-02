@@ -17,6 +17,7 @@ class ClawMachineGame {
         this.score = 0;
         this.totalWon = 0;
         this.plays = 0;
+        this.attemptsLeft = 5;           // 5 free attempts at start
         this.message = '';
         this.messageTimer = 0;
         this.showGuide = false;
@@ -39,17 +40,17 @@ class ClawMachineGame {
         this.keys = {};
         this.mobileKeys = {};
 
-        // Macchina centrata + buona su telefono
-        const mw = Math.min(620, this.width * 0.96);
+        // Macchina PIÙ GRANDE e centrata
+        const mw = Math.min(680, this.width * 0.92);
         this.machine = {
             width: mw,
-            height: Math.min(520, this.height * 0.68),
+            height: Math.min(560, this.height * 0.72),
             left: (this.width - mw) / 2,
-            top: 90,
-            glassLeft: (this.width - mw) / 2 + 12,
-            glassTop: 125,
-            glassW: mw - 24,
-            glassH: Math.min(380, this.height * 0.52)
+            top: 75,
+            glassLeft: (this.width - mw) / 2 + 15,
+            glassTop: 110,
+            glassW: mw - 30,
+            glassH: Math.min(410, this.height * 0.55)
         };
 
         this._genPrizes();
@@ -110,7 +111,6 @@ class ClawMachineGame {
         const mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const my = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-        // Big LANCIA button
         const btnX = this.width - 240, btnY = this.height - 155;
         if (mx > btnX && mx < btnX + 210 && my > btnY && my < btnY + 85) {
             this._btnPressed = true;
@@ -119,14 +119,13 @@ class ClawMachineGame {
             return;
         }
 
-        // RICARICA button
         const rX = btnX - 130, rY = btnY + 15;
         if (mx > rX && mx < rX + 110 && my > rY && my < rY + 55) {
             this._resetMachine();
             return;
         }
 
-        // TORNA ALLA HUB button (mobile friendly)
+        // TORNA ALLA HUB
         const closeW = Math.min(190, this.width * 0.45);
         if (mx > 20 && mx < 20 + closeW && my > this.height - 88 && my < this.height - 36) {
             const container = document.getElementById('game-container');
@@ -135,7 +134,6 @@ class ClawMachineGame {
             return;
         }
 
-        // Mobile movement zones
         if (this.claw.state === 'IDLE') {
             if (mx < this.width * 0.22) {
                 this.mobileKeys['left'] = true;
@@ -150,8 +148,19 @@ class ClawMachineGame {
     }
 
     _startDrop() {
-        if (this.credits < 200 || this.claw.state !== 'IDLE') return;
-        this.credits -= 200;
+        if (this.claw.state !== 'IDLE') return;
+
+        if (this.attemptsLeft > 0) {
+            this.attemptsLeft--;
+        } else {
+            if (this.credits < 150) {
+                this.message = 'Crediti insufficienti (150 coins per tiro)';
+                this.messageTimer = 90;
+                return;
+            }
+            this.credits -= 150;
+        }
+
         this.plays++;
         this.claw.state = 'DROPPING';
         this.armLength = 40;
@@ -328,21 +337,18 @@ class ClawMachineGame {
         c.fillStyle = '#0a0c14';
         c.fillRect(0, 0, this.width, this.height);
 
-        // Cabinet centrato
         c.fillStyle = '#1f2533';
         c.fillRect(this.machine.left, this.machine.top, this.machine.width, this.machine.height);
         c.strokeStyle = '#f9ca24';
         c.lineWidth = 6;
         c.strokeRect(this.machine.left, this.machine.top, this.machine.width, this.machine.height);
 
-        // Glass
         c.fillStyle = 'rgba(20,25,40,0.35)';
         c.fillRect(this.machine.glassLeft, this.machine.glassTop, this.machine.glassW, this.machine.glassH);
         c.strokeStyle = 'rgba(249,202,36,0.6)';
         c.lineWidth = 3;
         c.strokeRect(this.machine.glassLeft, this.machine.glassTop, this.machine.glassW, this.machine.glassH);
 
-        // Prizes
         this.prizes.forEach(p => {
             c.save();
             c.translate(p.x, p.y);
@@ -358,7 +364,6 @@ class ClawMachineGame {
             c.restore();
         });
 
-        // Claw
         const baseY = this.machine.glassTop - 25;
         const cx = this.claw.x;
         c.strokeStyle = '#e0e0e0';
@@ -384,7 +389,6 @@ class ClawMachineGame {
         c.lineTo(cx + 22 + open, cy + 28);
         c.stroke();
 
-        // Particles
         this.particles.forEach(p => {
             c.globalAlpha = p.life / p.maxLife;
             c.fillStyle = p.color;
@@ -427,19 +431,21 @@ class ClawMachineGame {
         c.font = '14px "Inter", system-ui';
         c.fillText(`SCORE: ${this.score}  •  Vinto: ${this.totalWon}`, this.width - 300, 78);
 
-        // Big button
         const bx = this.width - 240, by = this.height - 155;
-        const can = this.credits >= 200 && this.claw.state === 'IDLE';
+        const can = this.credits >= 150 && this.claw.state === 'IDLE';
         c.fillStyle = can ? '#f9ca24' : '#555';
         c.fillRect(bx, by, 210, 85);
         c.strokeStyle = can ? '#fff' : '#777';
         c.lineWidth = 4;
         c.strokeRect(bx, by, 210, 85);
         c.fillStyle = can ? '#111' : '#aaa';
-        c.font = 'bold 20px "Inter", system-ui';
-        c.fillText(can ? 'LANCIA IL GANCIO' : 'CREDITI BASSI', bx + 105, by + 38);
+        c.font = 'bold 18px "Inter", system-ui';
 
-        // Close button (mobile friendly)
+        let btnText = 'LANCIA IL GANCIO';
+        if (!can && this.attemptsLeft === 0) btnText = 'COMPRA TIRO (150$)';
+        c.fillText(btnText, bx + 105, by + 38);
+
+        // Close button
         const closeW = Math.min(190, this.width * 0.45);
         c.fillStyle = 'rgba(35,35,45,0.92)';
         c.fillRect(20, this.height - 88, closeW, 52);
