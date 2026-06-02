@@ -23,8 +23,8 @@ class ClawMachineGame {
         this.message = '';
         this.messageTimer = 0;
         this.showGuide = false;
-        this.showDiscordPrompt = false; // when attempts are 0
-        this._btnPressed = false;       // for button press visual feedback
+        this.showDiscordPrompt = false;
+        this._btnPressed = false;
 
         // ── Claw Machine Physics & State ──────────────────────────────────
         this.claw = {
@@ -32,7 +32,7 @@ class ClawMachineGame {
             y: 80,
             targetX: 0,
             speed: 4.2,
-            state: 'IDLE',        // IDLE, MOVING, DROPPING, GRABBING, RETRACTING, RELEASING
+            state: 'IDLE',
             dropSpeed: 5.5,
             retractSpeed: 3.8,
             grabOffset: 0,
@@ -47,7 +47,6 @@ class ClawMachineGame {
         this.mobileKeys = {};
         this.keys = {};
 
-        // ── Machine dimensions (relative) ─────────────────────────────────
         this.machine = {
             width: 620,
             height: 520,
@@ -82,7 +81,6 @@ class ClawMachineGame {
             { name: 'Tesoro',         value: 120, color: '#e17055', r: 16, rare: true },
         ];
 
-        // Scatter prizes nicely inside the glass area
         for (let i = 0; i < 22; i++) {
             const t = types[Math.floor(Math.random() * types.length)];
             const px = this.machine.glassLeft + 40 + Math.random() * (this.machine.glassW - 80);
@@ -104,7 +102,7 @@ class ClawMachineGame {
         window.addEventListener('keydown', e => {
             this.keys[e.code] = true;
             if (e.code === 'Slash' || e.key === '?') { this.showGuide = !this.showGuide; }
-            if (e.code === 'Escape') { this.showGuide = false; }
+            if (e.code === 'Escape') { this.showGuide = false; this.showDiscordPrompt = false; }
             if ((e.code === 'Space' || e.code === 'Enter') && this.claw.state === 'IDLE') {
                 this._startDrop();
             }
@@ -114,10 +112,8 @@ class ClawMachineGame {
         });
         window.addEventListener('keyup', e => { this.keys[e.code] = false; });
 
-        // Mouse / Touch
         this.canvas.addEventListener('mousedown', e => this._handlePointer(e));
         this.canvas.addEventListener('touchstart', e => this._handlePointer(e), { passive: false });
-
         window.addEventListener('resize', () => this.resize());
     }
 
@@ -127,23 +123,20 @@ class ClawMachineGame {
         const mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const my = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-        // Discord claim button (when prompt is shown)
         if (this.showDiscordPrompt) {
-            const pw = 620, ph = 280;
+            const pw = 680, ph = 300;
             const px = this.width/2 - pw/2;
-            const py = this.height/2 - ph/2 - 30;
-            const claimY = py + 160;
-            if (mx > px + 80 && mx < px + pw - 80 && my > claimY && my < claimY + 58) {
+            const py = this.height/2 - ph/2 - 20;
+            const claimY = py + 165;
+            if (mx > px + 60 && mx < px + pw - 60 && my > claimY && my < claimY + 68) {
                 this.attemptsLeft = this.maxAttempts;
                 this.showDiscordPrompt = false;
                 this.message = 'Grazie! +5 tentativi sbloccati ❤️';
                 this.messageTimer = 120;
-                return;
             }
-            return; // block other clicks when prompt is open
+            return;
         }
 
-        // Big LANCIA button (improved area)
         const btnX = this.width - 240, btnY = this.height - 155;
         const btnW = 210, btnH = 85;
         if (mx > btnX && mx < btnX + btnW && my > btnY && my < btnY + btnH) {
@@ -153,14 +146,12 @@ class ClawMachineGame {
             return;
         }
 
-        // Small RICARICA button
         const rX = btnX - 130, rY = btnY + 15;
         if (mx > rX && mx < rX + 110 && my > rY && my < rY + 55) {
             this._resetMachine();
             return;
         }
 
-        // Left / Right zones for mobile claw movement
         if (this.claw.state === 'IDLE') {
             if (mx < this.width * 0.22) {
                 this.mobileKeys['left'] = true;
@@ -169,7 +160,6 @@ class ClawMachineGame {
                 this.mobileKeys['right'] = true;
                 setTimeout(() => { this.mobileKeys['right'] = false; }, 160);
             } else if (my > this.height * 0.65) {
-                // tap lower area = drop
                 this._startDrop();
             }
         }
@@ -177,9 +167,7 @@ class ClawMachineGame {
 
     _startDrop() {
         if (this.credits < 200 || this.claw.state !== 'IDLE' || this.attemptsLeft <= 0) {
-            if (this.attemptsLeft <= 0) {
-                this.showDiscordPrompt = true;
-            }
+            if (this.attemptsLeft <= 0) this.showDiscordPrompt = true;
             return;
         }
         this.credits -= 200;
@@ -202,7 +190,6 @@ class ClawMachineGame {
 
         const mk = this.mobileKeys;
 
-        // Claw horizontal movement
         if (this.claw.state === 'IDLE' || this.claw.state === 'MOVING') {
             let move = 0;
             if (this.keys['ArrowLeft'] || this.keys['KeyA'] || mk['left']) move -= 1;
@@ -219,13 +206,11 @@ class ClawMachineGame {
             }
         }
 
-        // Smooth claw X movement
         if (this.claw.state === 'IDLE' || this.claw.state === 'MOVING') {
             this.claw.x += (this.claw.targetX - this.claw.x) * 0.18;
             if (Math.abs(this.claw.targetX - this.claw.x) < 0.8) this.claw.x = this.claw.targetX;
         }
 
-        // State machine for claw
         switch (this.claw.state) {
             case 'DROPPING':
                 this.armLength += this.claw.dropSpeed;
@@ -236,14 +221,10 @@ class ClawMachineGame {
                     setTimeout(() => this._tryGrab(), 180);
                 }
                 break;
-
             case 'GRABBING':
                 this.claw.grabOffset = Math.max(0, this.claw.grabOffset - 1.2);
-                if (this.claw.grabOffset <= 0) {
-                    this.claw.state = 'RETRACTING';
-                }
+                if (this.claw.grabOffset <= 0) this.claw.state = 'RETRACTING';
                 break;
-
             case 'RETRACTING':
                 this.armLength -= this.claw.retractSpeed;
                 if (this.armLength <= 40) {
@@ -254,7 +235,6 @@ class ClawMachineGame {
                 break;
         }
 
-        // Update grabbed prizes
         this.prizes.forEach(p => {
             if (p.grabbed) {
                 p.x = this.claw.x;
@@ -262,10 +242,9 @@ class ClawMachineGame {
                 p.vx *= 0.6;
                 p.vy = 0;
             } else {
-                // Gentle floating / physics for loose prizes
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.035; // gravity
+                p.vy += 0.035;
                 if (p.y > this.machine.glassTop + this.machine.glassH - 25) {
                     p.y = this.machine.glassTop + this.machine.glassH - 25;
                     p.vy *= -0.35;
@@ -279,24 +258,19 @@ class ClawMachineGame {
 
         this._updateParticles();
 
-        // Message timer
         if (this.messageTimer > 0) this.messageTimer--;
         if (this.messageTimer <= 0) this.message = '';
     }
 
     _tryGrab() {
-        // Find closest prize under the claw
         let closest = null;
         let minDist = 999;
-
         const clawX = this.claw.x;
         const clawY = this.machine.top + 70 + this.armLength;
 
         this.prizes.forEach(p => {
             if (p.grabbed) return;
-            const dx = p.x - clawX;
-            const dy = p.y - clawY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dist = Math.sqrt((p.x - clawX)**2 + (p.y - clawY)**2);
             if (dist < minDist && dist < p.r + 28) {
                 minDist = dist;
                 closest = p;
@@ -305,22 +279,18 @@ class ClawMachineGame {
 
         if (closest) {
             closest.grabbed = true;
-            closest.grabTime = Date.now();
             this._winPrize(closest);
         } else {
-            // Miss animation
-            this._particle(this.claw.x, this.machine.top + 70 + this.armLength, 0, 2, '#888', 18);
+            this._particle(clawX, clawY, 0, 2, '#888', 18);
         }
     }
 
     _winPrize(prize) {
-        const isSpecial = prize.rare && Math.random() < 0.35; // 35% chance on rare prize to trigger special
-
+        const isSpecial = prize.rare && Math.random() < 0.35;
         let winAmount = prize.value;
         let prizeMsg = `Hai vinto: ${prize.name} (+${winAmount} coins)`;
 
-        if (isSpecial || (Math.random() < 0.06)) { 
-            // 6% base chance or special rare
+        if (isSpecial || Math.random() < 0.06) {
             winAmount = 220;
             prizeMsg = '🎉 HAI VINTO IL RUOLO CUSTOM! +220 coins';
             this._sendWebhookLog(prize.name);
@@ -333,7 +303,6 @@ class ClawMachineGame {
         this.message = prizeMsg;
         this.messageTimer = 140;
 
-        // Celebration particles
         const col = isSpecial ? '#f9ca24' : prize.color;
         for (let i = 0; i < (isSpecial ? 45 : 22); i++) {
             const a = Math.random() * Math.PI * 2;
@@ -348,10 +317,8 @@ class ClawMachineGame {
             );
         }
 
-        // Remove the grabbed prize after short delay
         setTimeout(() => {
             this.prizes = this.prizes.filter(pr => pr.id !== prize.id);
-            // Respawn a couple new prizes if machine gets empty
             if (this.prizes.length < 8) this._spawnNewPrizes(4);
         }, 650);
     }
@@ -379,7 +346,6 @@ class ClawMachineGame {
     }
 
     _releasePrize() {
-        // If still holding something when fully retracted, drop it back
         this.prizes.forEach(p => {
             if (p.grabbed) {
                 p.grabbed = false;
@@ -411,7 +377,7 @@ class ClawMachineGame {
                 content: `🎰 **${playerName}** ha trovato nella **MACCHINA A GANCIO** il **RUOLO CUSTOM** vincendo **${prizeName}**!`,
                 embeds: [{
                     title: '🎁 VINCITA SPECIALE - RUOLO CUSTOM',
-                    description: `**${playerName}**\nPremio: **${prizeName}**\nCrediti attuali: ${this.credits}\nPartite totali: ${this.plays}`,
+                    description: `**${playerName}**\nPremio: **${prizeName}**\nCrediti: ${this.credits}\nPartite: ${this.plays}`,
                     color: 0xf9ca24,
                     timestamp: new Date().toISOString()
                 }]
@@ -421,9 +387,7 @@ class ClawMachineGame {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-        } catch (e) {
-            console.log('%c[Macchina a Gancio] Webhook error (non bloccante)', 'color:#f66');
-        }
+        } catch (_) {}
     }
 
     draw() {
@@ -431,49 +395,41 @@ class ClawMachineGame {
         c.fillStyle = '#0a0c14';
         c.fillRect(0, 0, this.width, this.height);
 
-        // Cabinet background (arcade style)
         c.fillStyle = '#1f2533';
         c.fillRect(this.machine.left - 20, this.machine.top - 30, this.machine.width + 40, this.machine.height + 80);
         c.strokeStyle = '#f9ca24';
         c.lineWidth = 6;
         c.strokeRect(this.machine.left - 20, this.machine.top - 30, this.machine.width + 40, this.machine.height + 80);
 
-        // Glass area
         c.fillStyle = 'rgba(20, 25, 40, 0.35)';
         c.fillRect(this.machine.glassLeft, this.machine.glassTop, this.machine.glassW, this.machine.glassH);
         c.strokeStyle = 'rgba(249,202,36,0.6)';
         c.lineWidth = 3;
         c.strokeRect(this.machine.glassLeft, this.machine.glassTop, this.machine.glassW, this.machine.glassH);
 
-        // Prize area floor
         c.fillStyle = '#2d3446';
         c.fillRect(this.machine.glassLeft + 8, this.machine.glassTop + this.machine.glassH - 35, this.machine.glassW - 16, 30);
 
-        // Draw prizes
         this.prizes.forEach(p => {
             c.save();
             c.translate(p.x, p.y);
             if (p.grabbed) c.rotate(Math.sin(Date.now()/180) * 0.08);
 
-            // Shadow
             c.fillStyle = 'rgba(0,0,0,0.35)';
             c.beginPath();
             c.ellipse(4, p.r + 6, p.r * 0.9, 6, 0, 0, Math.PI * 2);
             c.fill();
 
-            // Main body
             c.fillStyle = p.color;
             c.beginPath();
             c.arc(0, 0, p.r, 0, Math.PI * 2);
             c.fill();
 
-            // Highlight
             c.fillStyle = 'rgba(255,255,255,0.35)';
             c.beginPath();
             c.arc(-p.r * 0.35, -p.r * 0.35, p.r * 0.45, 0, Math.PI * 2);
             c.fill();
 
-            // Cute face / detail
             c.fillStyle = '#111';
             c.fillRect(-5, -3, 3, 3);
             c.fillRect(2, -3, 3, 3);
@@ -482,22 +438,18 @@ class ClawMachineGame {
             c.beginPath();
             c.arc(0, 4, 5, 0.2, Math.PI - 0.2);
             c.stroke();
-
             c.restore();
         });
 
-        // Claw arm + mechanism
         const clawBaseY = this.machine.top + 55;
         const clawX = this.claw.x;
 
-        // Top rail
         c.fillStyle = '#3a4255';
         c.fillRect(this.machine.glassLeft, clawBaseY - 18, this.machine.glassW, 22);
         c.strokeStyle = '#f9ca24';
         c.lineWidth = 2;
         c.strokeRect(this.machine.glassLeft, clawBaseY - 18, this.machine.glassW, 22);
 
-        // Vertical arm
         c.strokeStyle = '#e0e0e0';
         c.lineWidth = 7;
         c.beginPath();
@@ -512,7 +464,6 @@ class ClawMachineGame {
         c.lineTo(clawX - 4, clawBaseY + this.armLength);
         c.stroke();
 
-        // Claw head
         const clawY = clawBaseY + this.armLength;
         c.fillStyle = '#f9ca24';
         c.beginPath();
@@ -522,22 +473,18 @@ class ClawMachineGame {
         c.lineWidth = 2;
         c.stroke();
 
-        // Claw fingers
         const open = this.claw.state === 'GRABBING' ? this.claw.grabOffset : 0;
         c.strokeStyle = '#ddd';
         c.lineWidth = 5;
-        // Left finger
         c.beginPath();
         c.moveTo(clawX - 12, clawY + 6);
         c.lineTo(clawX - 22 - open, clawY + 28);
         c.stroke();
-        // Right finger
         c.beginPath();
         c.moveTo(clawX + 12, clawY + 6);
         c.lineTo(clawX + 22 + open, clawY + 28);
         c.stroke();
 
-        // Particles
         this.particles.forEach(p => {
             c.globalAlpha = Math.max(0.1, p.life / p.maxLife);
             c.fillStyle = p.color;
@@ -547,10 +494,8 @@ class ClawMachineGame {
         });
         c.globalAlpha = 1;
 
-        // HUD
         this._drawHUD(c);
 
-        // Win message toast
         if (this.message && this.messageTimer > 0) {
             const alpha = Math.min(1, this.messageTimer / 35);
             const isSpecial = this.message.includes('RUOLO CUSTOM');
@@ -564,60 +509,46 @@ class ClawMachineGame {
             c.font = isSpecial ? 'bold 26px "Inter", system-ui' : 'bold 22px "Inter", system-ui';
             c.textAlign = 'center';
             c.fillText(this.message, this.width/2, 125);
-
-            if (isSpecial) {
-                c.fillStyle = 'rgba(255,255,255,0.7)';
-                c.font = '15px "Inter", system-ui';
-                c.fillText('✨ Log inviato su Discord!', this.width/2, 148);
-            }
         }
 
-        // Guide overlay
         if (this.showGuide) this._drawGuide(c);
 
-        // Discord activity prompt when attempts are finished
         if (this.showDiscordPrompt && this.attemptsLeft <= 0) {
-            const pw = 620, ph = 280;
+            const pw = 680, ph = 300;
             const px = this.width/2 - pw/2;
-            const py = this.height/2 - ph/2 - 30;
+            const py = this.height/2 - ph/2 - 20;
 
-            c.fillStyle = 'rgba(10,12,20,0.97)';
+            c.fillStyle = 'rgba(8,10,18,0.98)';
             c.fillRect(px, py, pw, ph);
             c.strokeStyle = '#f9ca24';
-            c.lineWidth = 4;
+            c.lineWidth = 5;
             c.strokeRect(px, py, pw, ph);
 
             c.fillStyle = '#f9ca24';
-            c.font = 'bold 24px "Inter", system-ui';
+            c.font = 'bold 26px "Inter", system-ui';
             c.textAlign = 'center';
-            c.fillText('🎰 TENTATIVI ESAURITI!', this.width/2, py + 45);
+            c.fillText('🎰 TENTATIVI FINITI!', this.width/2, py + 48);
 
-            c.fillStyle = 'rgba(255,255,255,0.85)';
-            c.font = '16px "Inter", system-ui';
-            c.fillText('Per sbloccare altri 5 tentativi e continuare a giocare:', this.width/2, py + 85);
-            c.fillText('scrivi almeno 8 messaggi nel canale Discord del server', this.width/2, py + 108);
-            c.fillText('e poi clicca il pulsante qui sotto.', this.width/2, py + 131);
+            c.fillStyle = 'rgba(255,255,255,0.9)';
+            c.font = '17px "Inter", system-ui';
+            c.fillText('Per avere altri tentativi e continuare a giocare:', this.width/2, py + 90);
+            c.fillText('scrivi almeno 8 messaggi nel canale Discord', this.width/2, py + 115);
+            c.fillText('poi clicca il pulsante grande qui sotto.', this.width/2, py + 140);
 
-            // Big claim button
-            const claimY = py + 160;
-            c.fillStyle = '#55efc4';
-            c.fillRect(px + 80, claimY, pw - 160, 58);
+            const claimY = py + 165;
+            c.fillStyle = '#00d1b2';
+            c.fillRect(px + 60, claimY, pw - 120, 68);
             c.strokeStyle = '#fff';
-            c.lineWidth = 3;
-            c.strokeRect(px + 80, claimY, pw - 160, 58);
+            c.lineWidth = 4;
+            c.strokeRect(px + 60, claimY, pw - 120, 68);
 
             c.fillStyle = '#111';
-            c.font = 'bold 18px "Inter", system-ui';
-            c.fillText('HO SCRITTO I MESSAGGI! +5 TENTATIVI', this.width/2, claimY + 37);
-
-            c.fillStyle = 'rgba(255,255,255,0.5)';
-            c.font = '13px "Inter", system-ui';
-            c.fillText('Questo aiuta a creare attività nel server Discord ❤️', this.width/2, py + ph - 22);
+            c.font = 'bold 20px "Inter", system-ui';
+            c.fillText('✅ HO SCRITTO I MESSAGGI! +5 TENTATIVI', this.width/2, claimY + 42);
         }
     }
 
     _drawHUD(c) {
-        // Top bar
         c.fillStyle = 'rgba(15,18,28,0.95)';
         c.fillRect(0, 0, this.width, 68);
         c.strokeStyle = 'rgba(249,202,36,0.3)';
@@ -636,7 +567,6 @@ class ClawMachineGame {
         c.font = 'bold 20px "Inter", system-ui';
         c.fillText(`$ ${this.credits}`, this.width - 300, 42);
 
-        // Attempts counter (important!)
         const attColor = this.attemptsLeft > 2 ? '#55efc4' : this.attemptsLeft > 0 ? '#f9ca24' : '#d63031';
         c.fillStyle = attColor;
         c.font = 'bold 18px "Inter", system-ui';
@@ -646,12 +576,10 @@ class ClawMachineGame {
         c.font = '14px "Inter", system-ui';
         c.fillText(`SCORE: ${this.score}  •  Vinto: ${this.totalWon}`, this.width - 300, 78);
 
-        // Big improved PLAY button (with press feedback)
         const btnX = this.width - 240, btnY = this.height - 155;
         const btnW = 210, btnH = 85;
         const canPlay = this.credits >= 200 && this.claw.state === 'IDLE' && this.attemptsLeft > 0;
 
-        // Button shadow + press effect
         if (this._btnPressed) {
             c.fillStyle = '#c9a227';
             c.fillRect(btnX + 3, btnY + 3, btnW, btnH);
@@ -671,10 +599,6 @@ class ClawMachineGame {
         c.textAlign = 'center';
         c.fillText(canPlay ? 'LANCIA IL GANCIO' : (this.attemptsLeft <= 0 ? 'TENTATIVI FINITI' : 'CREDITI BASSI'), btnX + btnW/2, btnY + 38);
 
-        c.font = '13px "Inter", system-ui';
-        c.fillText(canPlay ? 'SPAZIO o TAP qui' : '', btnX + btnW/2, btnY + 60);
-
-        // Small Ricarica button
         const rX = btnX - 130, rY = btnY + 15;
         c.fillStyle = '#3a4255';
         c.fillRect(rX, rY, 110, 55);
@@ -687,11 +611,10 @@ class ClawMachineGame {
         c.font = '11px "Inter", system-ui';
         c.fillText('(R)', rX + 55, rY + 42);
 
-        // Instructions
         c.fillStyle = 'rgba(255,255,255,0.4)';
         c.font = '12px "Inter", system-ui';
         c.textAlign = 'center';
-        c.fillText('← → Muovi  •  SPAZIO/TAP = Lancia  •  R = Ricarica  •  ? = Guida  •  Tentativi limitati per attività Discord', this.width/2, this.height - 22);
+        c.fillText('← → Muovi  •  SPAZIO/TAP = Lancia  •  R = Ricarica  •  ? = Guida', this.width/2, this.height - 22);
     }
 
     _drawGuide(c) {
@@ -718,19 +641,17 @@ class ClawMachineGame {
         c.stroke();
 
         const lines = [
-            'Muovi il gancio con ← →  (o tocca sinistra/destra dello schermo)',
+            'Muovi il gancio con ← →  (o tocca sinistra/destra)',
             '',
-            'Premi SPAZIO o tocca il pulsante giallo per LANCIARE il gancio',
+            'Premi SPAZIO o tocca il pulsante per LANCIARE',
             '',
-            'Quando il gancio scende, si chiude automaticamente',
-            'Se afferra un pelouche o moneta → vinci i coins!',
+            'Il gancio si chiude automaticamente',
+            'Se afferra un premio → vinci coins!',
             '',
-            'Premi R per ricaricare la macchina con nuovi premi',
+            'Premi R per ricaricare la macchina',
             '',
-            '6% di chance base + premi rari = possibilità di vincere',
-            'il RUOLO CUSTOM (log inviato automaticamente su Discord)',
-            '',
-            'Ogni tentativo costa 200 crediti'
+            'Tentativi limitati: scrivi messaggi su Discord',
+            'per sbloccare altri tentativi'
         ];
 
         c.fillStyle = 'rgba(255,255,255,0.85)';
@@ -755,14 +676,13 @@ class ClawMachineGame {
 
     start() {
         this.running = true;
-        // Initial claw position
         this.claw.x = this.machine.glassLeft + this.machine.glassW / 2;
         this.claw.targetX = this.claw.x;
         this.loop();
     }
 }
 
-// ── Boot (clean start with button at the beginning) ─────────────────────
+// ── Boot & Compatibility ───────────────────────────────────────────────
 let gameInstance = null;
 
 function startGame() {
@@ -773,11 +693,12 @@ function startGame() {
     }
 }
 
-// Clean auto-start (no more 5-click secret)
-window.addEventListener('load', () => {
-    const canvas = document.getElementById('game-canvas');
-    if (canvas) {
-        // Start immediately with the big button visible from the beginning
-        startGame();
+window.startMinigame = startGame;
+window.startGame = startGame;
+
+// Compatibility with old index.html onclick
+class SpaceGame extends ClawMachineGame {
+    constructor(canvasId) {
+        super(canvasId);
     }
-});
+}
