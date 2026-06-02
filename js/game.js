@@ -12,21 +12,16 @@ class ClawMachineGame {
         this.ctx = this.canvas.getContext('2d', { alpha: true });
         this.resize();
 
-        // Game State
         this.running = false;
         this.credits = 1200;
         this.score = 0;
         this.totalWon = 0;
         this.plays = 0;
-        this.attemptsLeft = 5;
-        this.maxAttempts = 5;
         this.message = '';
         this.messageTimer = 0;
         this.showGuide = false;
-        this.showDiscordPrompt = false;
         this._btnPressed = false;
 
-        // Claw
         this.claw = {
             x: 0,
             targetX: 0,
@@ -44,11 +39,17 @@ class ClawMachineGame {
         this.keys = {};
         this.mobileKeys = {};
 
+        // Macchina centrata e responsive
+        const mw = Math.min(620, this.width * 0.92);
         this.machine = {
-            glassLeft: 110,
-            glassTop: 95,
-            glassW: 580,
-            glassH: 380
+            width: mw,
+            height: 520,
+            left: (this.width - mw) / 2,
+            top: 70,
+            glassLeft: (this.width - mw) / 2 + 18,
+            glassTop: 105,
+            glassW: mw - 36,
+            glassH: 390
         };
 
         this._genPrizes();
@@ -92,7 +93,7 @@ class ClawMachineGame {
         window.addEventListener('keydown', e => {
             this.keys[e.code] = true;
             if (e.code === 'Slash' || e.key === '?') this.showGuide = !this.showGuide;
-            if (e.code === 'Escape') { this.showGuide = false; this.showDiscordPrompt = false; }
+            if (e.code === 'Escape') this.showGuide = false;
             if ((e.code === 'Space' || e.code === 'Enter') && this.claw.state === 'IDLE') this._startDrop();
             if (e.code === 'KeyR' && this.claw.state === 'IDLE') this._resetMachine();
         });
@@ -109,20 +110,6 @@ class ClawMachineGame {
         const mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const my = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-        // Discord prompt claim button
-        if (this.showDiscordPrompt) {
-            const px = this.width/2 - 340;
-            const py = this.height/2 - 170;
-            if (mx > px + 60 && mx < px + 620 && my > py + 165 && my < py + 233) {
-                this.attemptsLeft = this.maxAttempts;
-                this.showDiscordPrompt = false;
-                this.message = 'Grazie! +5 tentativi sbloccati ❤️';
-                this.messageTimer = 120;
-            }
-            return;
-        }
-
-        // Main big button
         const btnX = this.width - 240, btnY = this.height - 155;
         if (mx > btnX && mx < btnX + 210 && my > btnY && my < btnY + 85) {
             this._btnPressed = true;
@@ -131,23 +118,21 @@ class ClawMachineGame {
             return;
         }
 
-        // Ricarica button
         const rX = btnX - 130, rY = btnY + 15;
         if (mx > rX && mx < rX + 110 && my > rY && my < rY + 55) {
             this._resetMachine();
             return;
         }
 
-        // Torna alla HUB button
-        const closeX = 30, closeY = this.height - 95;
-        if (mx > closeX && mx < closeX + 170 && my > closeY && my < closeY + 50) {
+        // Torna alla HUB
+        const closeW = Math.min(190, this.width * 0.45);
+        if (mx > 20 && mx < 20 + closeW && my > this.height - 88 && my < this.height - 36) {
             const container = document.getElementById('game-container');
             if (container) container.classList.remove('active');
             this.running = false;
             return;
         }
 
-        // Mobile movement
         if (this.claw.state === 'IDLE') {
             if (mx < this.width * 0.22) {
                 this.mobileKeys['left'] = true;
@@ -162,13 +147,9 @@ class ClawMachineGame {
     }
 
     _startDrop() {
-        if (this.credits < 200 || this.claw.state !== 'IDLE' || this.attemptsLeft <= 0) {
-            if (this.attemptsLeft <= 0) this.showDiscordPrompt = true;
-            return;
-        }
+        if (this.credits < 200 || this.claw.state !== 'IDLE') return;
         this.credits -= 200;
         this.plays++;
-        this.attemptsLeft--;
         this.claw.state = 'DROPPING';
         this.armLength = 40;
         this.claw.grabOffset = 0;
@@ -184,7 +165,6 @@ class ClawMachineGame {
     update() {
         if (!this.running) return;
 
-        // Claw movement
         let move = 0;
         if (this.keys['ArrowLeft'] || this.keys['KeyA'] || this.mobileKeys['left']) move -= 1;
         if (this.keys['ArrowRight'] || this.keys['KeyD'] || this.mobileKeys['right']) move += 1;
@@ -198,7 +178,6 @@ class ClawMachineGame {
 
         this.claw.x += (this.claw.targetX - this.claw.x) * 0.18;
 
-        // Claw states
         switch (this.claw.state) {
             case 'DROPPING':
                 this.armLength += this.claw.dropSpeed;
@@ -223,7 +202,6 @@ class ClawMachineGame {
                 break;
         }
 
-        // Prizes physics
         this.prizes.forEach(p => {
             if (p.grabbed) {
                 p.x = this.claw.x;
@@ -336,7 +314,7 @@ class ClawMachineGame {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     content: `🎰 **${name}** ha vinto il **RUOLO CUSTOM** nella Macchina a Gancio!`,
-                    embeds: [{ title: '🎁 Vincita Ruolo Custom', description: `Premio: ${prizeName}\nCrediti: ${this.credits}`, color: 0xf9ca24 }]
+                    embeds: [{ title: '🎁 Vincita Ruolo Custom', description: `Premio: ${prizeName}`, color: 0xf9ca24 }]
                 })
             });
         } catch (_) {}
@@ -347,12 +325,12 @@ class ClawMachineGame {
         c.fillStyle = '#0a0c14';
         c.fillRect(0, 0, this.width, this.height);
 
-        // Cabinet
+        // Cabinet centrato
         c.fillStyle = '#1f2533';
-        c.fillRect(70, 30, 660, 560);
+        c.fillRect(this.machine.left, this.machine.top, this.machine.width, this.machine.height);
         c.strokeStyle = '#f9ca24';
         c.lineWidth = 6;
-        c.strokeRect(70, 30, 660, 560);
+        c.strokeRect(this.machine.left, this.machine.top, this.machine.width, this.machine.height);
 
         // Glass
         c.fillStyle = 'rgba(20,25,40,0.35)';
@@ -415,7 +393,6 @@ class ClawMachineGame {
 
         this._drawHUD(c);
 
-        // Win message
         if (this.message && this.messageTimer > 0) {
             const alpha = Math.min(1, this.messageTimer / 35);
             c.fillStyle = `rgba(10,12,20,${0.92 * alpha})`;
@@ -430,34 +407,6 @@ class ClawMachineGame {
         }
 
         if (this.showGuide) this._drawGuide(c);
-
-        // Discord prompt
-        if (this.showDiscordPrompt && this.attemptsLeft <= 0) {
-            const px = this.width/2 - 340;
-            const py = this.height/2 - 170;
-            c.fillStyle = 'rgba(8,10,18,0.98)';
-            c.fillRect(px, py, 680, 300);
-            c.strokeStyle = '#f9ca24';
-            c.lineWidth = 5;
-            c.strokeRect(px, py, 680, 300);
-
-            c.fillStyle = '#f9ca24';
-            c.font = 'bold 26px "Inter", system-ui';
-            c.fillText('🎰 TENTATIVI FINITI!', this.width/2, py + 48);
-
-            c.fillStyle = '#fff';
-            c.font = '17px "Inter", system-ui';
-            c.fillText('Scrivi almeno 8 messaggi su Discord per sbloccare +5 tentativi', this.width/2, py + 110);
-
-            c.fillStyle = '#00d1b2';
-            c.fillRect(px + 60, py + 165, 560, 68);
-            c.strokeStyle = '#fff';
-            c.lineWidth = 4;
-            c.strokeRect(px + 60, py + 165, 560, 68);
-            c.fillStyle = '#111';
-            c.font = 'bold 20px "Inter", system-ui';
-            c.fillText('✅ HO SCRITTO I MESSAGGI! +5 TENTATIVI', this.width/2, py + 207);
-        }
     }
 
     _drawHUD(c) {
@@ -471,14 +420,13 @@ class ClawMachineGame {
         c.font = 'bold 20px "Inter", system-ui';
         c.fillText(`$ ${this.credits}`, this.width - 300, 42);
 
-        const attCol = this.attemptsLeft > 2 ? '#55efc4' : this.attemptsLeft > 0 ? '#f9ca24' : '#d63031';
-        c.fillStyle = attCol;
-        c.font = 'bold 18px "Inter", system-ui';
-        c.fillText(`Tentativi: ${this.attemptsLeft}/5`, this.width - 300, 62);
+        c.fillStyle = 'rgba(255,255,255,0.6)';
+        c.font = '14px "Inter", system-ui';
+        c.fillText(`SCORE: ${this.score}  •  Vinto: ${this.totalWon}`, this.width - 300, 78);
 
         // Big button
         const bx = this.width - 240, by = this.height - 155;
-        const can = this.credits >= 200 && this.claw.state === 'IDLE' && this.attemptsLeft > 0;
+        const can = this.credits >= 200 && this.claw.state === 'IDLE';
         c.fillStyle = can ? '#f9ca24' : '#555';
         c.fillRect(bx, by, 210, 85);
         c.strokeStyle = can ? '#fff' : '#777';
@@ -486,21 +434,26 @@ class ClawMachineGame {
         c.strokeRect(bx, by, 210, 85);
         c.fillStyle = can ? '#111' : '#aaa';
         c.font = 'bold 20px "Inter", system-ui';
-        c.fillText(can ? 'LANCIA IL GANCIO' : 'TENTATIVI FINITI', bx + 105, by + 38);
+        c.fillText(can ? 'LANCIA IL GANCIO' : 'CREDITI BASSI', bx + 105, by + 38);
 
-        // Torna alla HUB button
-        c.fillStyle = 'rgba(40,40,50,0.85)';
-        c.fillRect(30, this.height - 95, 170, 50);
+        // Close button
+        const closeW = Math.min(190, this.width * 0.45);
+        c.fillStyle = 'rgba(35,35,45,0.92)';
+        c.fillRect(20, this.height - 88, closeW, 52);
         c.strokeStyle = '#ff6b6b';
-        c.lineWidth = 2;
-        c.strokeRect(30, this.height - 95, 170, 50);
+        c.lineWidth = 3;
+        c.strokeRect(20, this.height - 88, closeW, 52);
         c.fillStyle = '#ff6b6b';
-        c.font = 'bold 15px "Inter", system-ui';
-        c.fillText('✕ TORNA ALLA HUB', 115, this.height - 63);
+        c.font = `bold ${closeW > 150 ? 15 : 13}px "Inter", system-ui`;
+        c.textAlign = 'center';
+        c.fillText('✕ TORNA ALLA HUB', 20 + closeW/2, this.height - 55);
+
+        c.fillStyle = 'rgba(255,255,255,0.4)';
+        c.font = '12px "Inter", system-ui';
+        c.fillText('← → Muovi  •  SPAZIO/TAP = Lancia  •  R = Ricarica  •  ? = Guida', this.width/2, this.height - 22);
     }
 
     _drawGuide(c) {
-        // (guida semplice - puoi espanderla se vuoi)
         c.fillStyle = 'rgba(10,12,20,0.95)';
         c.fillRect(this.width/2 - 310, this.height/2 - 190, 620, 380);
         c.strokeStyle = '#a29bfe';
@@ -512,8 +465,7 @@ class ClawMachineGame {
         c.fillStyle = '#fff';
         c.font = '16px "Inter", system-ui';
         c.fillText('← → = Muovi il gancio    SPAZIO = Lancia', this.width/2, this.height/2 - 100);
-        c.fillText('R = Ricarica macchina    ? = Chiudi guida', this.width/2, this.height/2 - 70);
-        c.fillText('Tentativi limitati → scrivi su Discord per averne altri', this.width/2, this.height/2 - 30);
+        c.fillText('R = Ricarica    ? = Chiudi guida', this.width/2, this.height/2 - 70);
     }
 
     loop() {
@@ -543,7 +495,6 @@ function startGame() {
 window.startMinigame = startGame;
 window.startGame = startGame;
 
-// Compatibility with old index.html
 class SpaceGame extends ClawMachineGame {
     constructor(canvasId) {
         super(canvasId);
