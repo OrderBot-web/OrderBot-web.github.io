@@ -6,9 +6,6 @@
 const GITHUB_REPO = 'OrderBot-web/OrderBot-web.github.io';
 const GITHUB_TOKEN = '';
 
-// === NEW: Discord Webhook for Macchina a Gancio logs (fill with your webhook URL) ===
-const DISCORD_WEBHOOK_URL = ''; // es: 'https://discord.com/api/webhooks/1234567890/abcdefg...'
-
 class SpaceGame {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
@@ -34,13 +31,13 @@ class SpaceGame {
         this.pilots       = [];
         this.showHireMenu = false;
         this.showGuide    = false;
-        this.showMachineMenu = false; // NEW: Macchina a Gancio
         this.mobileKeys   = {};
         this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         this.stars        = this._genStars(260);
         this.sun          = { x: 0, y: 0, size: 32 };
 
         // ── Free camera ────────────────────────────────────────────────────
+        // zoom = screen pixels per world unit
         this.camera = { x: 0, y: 0, zoom: 0.44, targetZoom: 0.44, panX: 0, panY: 0 };
         this._isPanning   = false;
         this._lastPan     = { x: 0, y: 0 };
@@ -109,10 +106,6 @@ class SpaceGame {
         this.camera.x = this.width/2;
         this.camera.y = this.height/2;
 
-        // NEW: temporary message for machine wins
-        this.message = '';
-        this.messageTimer = 0;
-
         this.init();
     }
 
@@ -142,12 +135,7 @@ class SpaceGame {
 
             // Guide toggle
             if (e.key === '?' || e.code === 'Slash') { this.showGuide = !this.showGuide; return; }
-            if (e.code === 'Escape') { 
-                this.showGuide = false; 
-                this.showHireMenu = false; 
-                this.showMachineMenu = false; 
-                return; 
-            }
+            if (e.code === 'Escape') { this.showGuide = false; this.showHireMenu = false; return; }
 
             // Found city
             if ((e.code==='Enter'||e.code==='Space') && s==='CHOOSE_CITY' && this.selectedBody)
@@ -163,15 +151,6 @@ class SpaceGame {
                 if (e.code==='Digit2') this.hireNPC(1);
                 if (e.code==='Digit3') this.hireNPC(2);
             }
-
-            // NEW: Macchina a Gancio menu
-            if (e.code==='KeyM' && s==='PLAY') {
-                this.showMachineMenu = !this.showMachineMenu;
-                this.showHireMenu = false;
-            }
-            if (this.showMachineMenu && (e.code==='Enter' || e.code==='Space' || e.code==='Digit1')) {
-                this._playMacchinaAGancio();
-            }
         });
         window.addEventListener('keyup', e => { this.keys[e.code]=false; });
 
@@ -184,9 +163,14 @@ class SpaceGame {
             const maxZ = isOver ? 1.2  : 12;
             const oldZ = this.camera.targetZoom;
             const newZ = Math.max(minZ, Math.min(maxZ, oldZ * factor));
+            // Zoom toward mouse cursor
             const mx = e.clientX, my = e.clientY;
+            // world point under mouse stays fixed:
+            // world = (screen - camera) / zoom  →  camera_new = screen - world * newZ
             const wx = (mx - this.camera.x) / oldZ;
             const wy = (my - this.camera.y) / oldZ;
+            // We'll adjust panX/panY after targetZoom change applies in update()
+            // Store the zoom anchor for smooth interpolation
             this._zoomAnchor = { mx, my, wx, wy, fromZ: oldZ, toZ: newZ };
             this.camera.targetZoom = newZ;
         }, { passive:false });
@@ -224,6 +208,7 @@ class SpaceGame {
         this.canvas.addEventListener('touchmove',  e => { this._processTouches(e, false); }, { passive:false });
         this.canvas.addEventListener('touchend',   e => {
             this._processTouches(e, false);
+            // CHOOSE_CITY: tap on a body (not on a button)
             if (this.launchState==='CHOOSE_CITY' && e.changedTouches[0]) {
                 const ct=e.changedTouches[0];
                 if (!this._touchOnButton(ct.clientX, ct.clientY)) {
@@ -240,19 +225,20 @@ class SpaceGame {
     // ── Mobile controls ──────────────────────────────────────────────────────
 
     _getMobileButtons() {
+        // Recompute only on resize
         if (this._mbCache && this._mbW===this.width && this._mbH===this.height) return this._mbCache;
         const s  = Math.min(this.width, this.height);
-        const r  = Math.max(38, s * 0.072);
+        const r  = Math.max(38, s * 0.072);   // base radius, scales with screen
         const mg = r * 1.05;
-        const by = this.height - mg - r;
+        const by = this.height - mg - r;       // bottom row y
         this._mbCache = [
+            // Flight controls (only during gameplay)
             { id:'left',   cx: mg+r,          cy: by,        r,        key:'ArrowLeft',  label:'◀', flight:true  },
             { id:'right',  cx: mg+r*3.3,      cy: by,        r,        key:'ArrowRight', label:'▶', flight:true  },
             { id:'thrust', cx: this.width-mg-r*1.15, cy: by, r: r*1.15, key:'ArrowUp',   label:'▲', flight:true  },
+            // Utility (always)
             { id:'guide',  cx: this.width-mg-r*0.65, cy: mg+r*0.65, r: r*0.62, key:'guide', label:'?', toggle:true },
             { id:'snap',   cx: this.width-mg-r*0.65-r*1.75, cy: mg+r*0.65, r: r*0.62, key:'snap', label:'G', toggle:true },
-            // NEW: Machine button on mobile
-            { id:'machine', cx: this.width-mg-r*0.65-r*3.5, cy: mg+r*0.65, r: r*0.62, key:'machine', label:'M', toggle:true },
         ];
         this._mbW=this.width; this._mbH=this.height;
         return this._mbCache;
@@ -264,8 +250,9 @@ class SpaceGame {
 
     _processTouches(e, isStart) {
         e.preventDefault();
-        this.isTouchDevice = true;
+        this.isTouchDevice = true;  // confirm touch device on first touch
 
+        // Pinch-to-zoom (2 fingers, no button logic)
         if (e.touches.length >= 2) {
             const dx=e.touches[0].clientX-e.touches[1].clientX;
             const dy=e.touches[0].clientY-e.touches[1].clientY;
@@ -294,10 +281,6 @@ class SpaceGame {
                 if (hit.toggle && isStart) {
                     if (hit.id==='guide') this.showGuide=!this.showGuide;
                     if (hit.id==='snap')  { this.camera.panX=0; this.camera.panY=0; }
-                    if (hit.id==='machine' && this.launchState==='PLAY') {
-                        this.showMachineMenu = !this.showMachineMenu;
-                        this.showHireMenu = false;
-                    }
                 } else if (!hit.toggle) {
                     newKeys[hit.key]=true;
                 }
@@ -309,6 +292,7 @@ class SpaceGame {
         this.mobileKeys=newKeys;
         this.isTouching = !!aimTouch && this.launchState==='PLAY';
         if (aimTouch) this.touchPos={x:aimTouch.clientX, y:aimTouch.clientY};
+        // CHOOSE_CITY hover update
         if (this.launchState==='CHOOSE_CITY' && aimTouch) this.hoveredBody=this._bodyAtScreen(aimTouch.clientX, aimTouch.clientY);
     }
 
@@ -357,95 +341,6 @@ class SpaceGame {
         this.showHireMenu=false;
     }
 
-    // ── NEW: Macchina a Gancio (Claw Machine) ────────────────────────────────
-
-    async _playMacchinaAGancio() {
-        if (!this.showMachineMenu || this.launchState !== 'PLAY') return;
-        
-        const cost = 200; // costo per un tentativo
-        if (this.credits < cost) {
-            this.message = 'CREDITI INSUFFICIENTI! (200 richiesti)';
-            this.messageTimer = 90;
-            return;
-        }
-
-        this.credits -= cost;
-
-        // Roll for prize (inspired by "macchina a gancio")
-        const roll = Math.random();
-        let prize = 30;
-        let prizeMsg = 'Hai vinto 30 coins!';
-        let isSpecial = false;
-
-        if (roll < 0.08) { 
-            // 8% chance - RARE: Ruolo Custom (as per your note)
-            prize = 50;
-            prizeMsg = '🎉 HAI VINTO IL RUOLO CUSTOM! +50 coins';
-            isSpecial = true;
-        } else if (roll < 0.28) { 
-            // 20% chance - good prize
-            prize = 50;
-            prizeMsg = 'Hai vinto 50 coins!';
-        } else if (roll < 0.55) {
-            // 27% chance - medium
-            prize = 35;
-            prizeMsg = 'Hai vinto 35 coins!';
-        }
-        // else common 30 coins (45% chance)
-
-        this.credits += prize;
-        this.score += Math.floor(prize * 0.8); // small score bonus
-
-        // Show message
-        this.message = prizeMsg;
-        this.messageTimer = 120;
-
-        // Special win → send to Discord webhook (as requested)
-        if (isSpecial) {
-            this._sendWebhookLog('ruolo custom 50 coins');
-        }
-
-        // Optional: small particle burst for fun
-        for (let i = 0; i < 18; i++) {
-            const a = Math.random() * Math.PI * 2;
-            this._particle(
-                this.ship.x + (Math.random() - 0.5) * 40, 
-                this.ship.y + (Math.random() - 0.5) * 40,
-                Math.cos(a) * (1 + Math.random()), 
-                Math.sin(a) * (1 + Math.random()),
-                isSpecial ? '#f9ca24' : '#55efc4',
-                35 + Math.random() * 25
-            );
-        }
-    }
-
-    async _sendWebhookLog(prizeType) {
-        if (!DISCORD_WEBHOOK_URL) {
-            console.log('%c[Macchina a Gancio] Webhook non configurato (DISCORD_WEBHOOK_URL vuoto)', 'color:#888');
-            return;
-        }
-        try {
-            const playerName = (document.getElementById('player-name')?.value || 'GIOCATORE').toUpperCase().slice(0,12);
-            const payload = {
-                content: `🎰 **${playerName}** ha trovato nella **macchina a gancio** il **${prizeType}**!`,
-                embeds: [{
-                    title: '🎁 Vincita Macchina a Gancio',
-                    description: `Utente: **${playerName}**\nPremio: **${prizeType}**\nCrediti attuali: ${this.credits}`,
-                    color: 0xf9ca24,
-                    timestamp: new Date().toISOString()
-                }]
-            };
-            await fetch(DISCORD_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            console.log('%c[Macchina a Gancio] Webhook inviato con successo', 'color:#0f0');
-        } catch (err) {
-            console.warn('%c[Macchina a Gancio] Errore invio webhook:', 'color:#f55', err);
-        }
-    }
-
     // ── Economy ──────────────────────────────────────────────────────────────
 
     spawnCrisis() {
@@ -487,12 +382,14 @@ class SpaceGame {
         this.camera.zoom += (this.camera.targetZoom - this.camera.zoom) * 0.12;
         if (this._zoomAnchor && Math.abs(this.camera.zoom - prevZoom) > 0.0001) {
             const { mx, my, wx, wy } = this._zoomAnchor;
+            // base follow offset
             const baseX = this.launchState==='CHOOSE_CITY' || this.launchState==='FOUNDING'
                 ? (this.homeBody && this.launchState==='FOUNDING' ? -this.homeBody.x*this.camera.zoom+this.width/2 : this.width/2)
                 : -this.ship.x*this.camera.zoom+this.width/2;
             const baseY = this.launchState==='CHOOSE_CITY' || this.launchState==='FOUNDING'
                 ? (this.homeBody && this.launchState==='FOUNDING' ? -this.homeBody.y*this.camera.zoom+this.height/2 : this.height/2)
                 : -this.ship.y*this.camera.zoom+this.height/2;
+            // desired camera.x so world point wx stays at mx
             const desiredCX = mx - wx*this.camera.zoom;
             this.camera.panX = desiredCX - baseX;
             const desiredCY = my - wy*this.camera.zoom;
@@ -520,10 +417,6 @@ class SpaceGame {
         this._updateParticles();
         this.camera.x=-this.ship.x*this.camera.zoom+this.width/2  + this.camera.panX;
         this.camera.y=-this.ship.y*this.camera.zoom+this.height/2 + this.camera.panY;
-
-        // Message timer
-        if (this.messageTimer > 0) this.messageTimer--;
-        if (this.messageTimer <= 0) this.message = '';
     }
 
     _updateBodies() {
@@ -752,7 +645,7 @@ class SpaceGame {
             c.fillText('LANCIO!', this.ship.x, this.ship.y-22);
         }
 
-        // Ship arrow indicator
+        // Ship arrow indicator (when panned far away, show direction back to ship)
         if (this.launchState==='PLAY' && (this.camera.panX!==0 || this.camera.panY!==0)) {
             this._drawShipArrow(c);
         }
@@ -765,111 +658,23 @@ class SpaceGame {
         else                                        this._drawHUD();
 
         if (this.showGuide)    this._drawGuide();
-
-        // NEW: Macchina a Gancio menu overlay
-        if (this.showMachineMenu && this.launchState === 'PLAY') {
-            this._drawMachineMenu();
-        }
-
-        // Win message toast
-        if (this.message && this.messageTimer > 0) {
-            const alpha = Math.min(1, this.messageTimer / 30);
-            c.fillStyle = `rgba(6,7,15,${0.85 * alpha})`;
-            c.fillRect(this.width/2 - 280, this.height/2 - 45, 560, 70);
-            c.strokeStyle = this.message.includes('RUOLO CUSTOM') ? '#f9ca24' : '#55efc4';
-            c.lineWidth = 3;
-            c.strokeRect(this.width/2 - 280, this.height/2 - 45, 560, 70);
-            
-            c.fillStyle = this.message.includes('RUOLO CUSTOM') ? '#f9ca24' : '#fff';
-            c.font = this.message.includes('RUOLO CUSTOM') 
-                ? 'bold 22px "Inter",sans-serif' 
-                : 'bold 20px "Inter",sans-serif';
-            c.textAlign = 'center';
-            c.fillText(this.message, this.width/2, this.height/2 + 5);
-            
-            c.fillStyle = 'rgba(255,255,255,0.6)';
-            c.font = '13px "Inter",sans-serif';
-            c.fillText('Premi M per chiudere la macchina', this.width/2, this.height/2 + 28);
-        }
     }
 
-    // NEW: Draw the claw machine menu
-    _drawMachineMenu() {
-        const c = this.ctx;
-        const mw = 520, mh = 320;
-        const mx = this.width/2 - mw/2;
-        const my = this.height/2 - mh/2;
-
-        // Backdrop
-        c.fillStyle = 'rgba(6,7,15,0.96)';
-        c.fillRect(mx, my, mw, mh);
-        c.strokeStyle = '#f9ca24';
-        c.lineWidth = 3;
-        c.strokeRect(mx, my, mw, mh);
-
-        // Title with claw icon
-        c.fillStyle = '#f9ca24';
-        c.font = 'bold 26px "Inter",sans-serif';
-        c.textAlign = 'center';
-        c.fillText('🎰  MACCHINA A GANCIO  🎰', this.width/2, my + 42);
-
-        c.strokeStyle = 'rgba(249,202,36,0.3)';
-        c.lineWidth = 1;
-        c.beginPath();
-        c.moveTo(mx + 30, my + 55);
-        c.lineTo(mx + mw - 30, my + 55);
-        c.stroke();
-
-        // Description
-        c.fillStyle = 'rgba(255,255,255,0.75)';
-        c.font = '14px "Inter",sans-serif';
-        c.fillText('Vinci coins da spendere per tentativi o perks su Discord!', this.width/2, my + 78);
-
-        // Cost & chance info
-        c.fillStyle = '#a29bfe';
-        c.font = 'bold 15px "Inter",sans-serif';
-        c.fillText('Costo per tentativo:  200 crediti', this.width/2, my + 108);
-
-        c.fillStyle = 'rgba(255,255,255,0.55)';
-        c.font = '13px "Inter",sans-serif';
-        c.fillText('Probabilità:  45% 30c  •  27% 35c  •  20% 50c  •  8% RUOLO CUSTOM (50c + log)', this.width/2, my + 130);
-
-        // Big PLAY button area
-        const btnY = my + 165;
-        const btnH = 58;
-        c.fillStyle = this.credits >= 200 ? '#f9ca24' : '#555';
-        c.fillRect(mx + 60, btnY, mw - 120, btnH);
-        c.strokeStyle = this.credits >= 200 ? '#fff' : '#888';
-        c.lineWidth = 2;
-        c.strokeRect(mx + 60, btnY, mw - 120, btnH);
-
-        c.fillStyle = this.credits >= 200 ? '#111' : '#aaa';
-        c.font = 'bold 22px "Inter",sans-serif';
-        c.fillText(this.credits >= 200 ? 'PREMI INVIO / SPAZIO / 1  PER GIOCARE' : 'CREDITI INSUFFICIENTI', this.width/2, btnY + 37);
-
-        // Current credits
-        c.fillStyle = '#55efc4';
-        c.font = 'bold 18px "Inter",sans-serif';
-        c.fillText(`I tuoi crediti:  $ ${this.credits}`, this.width/2, my + mh - 55);
-
-        // Footer
-        c.fillStyle = 'rgba(255,255,255,0.35)';
-        c.font = '12px "Inter",sans-serif';
-        c.fillText('[M] chiudi  •  [INVIO] gioca  •  Webhook invia log per ruolo custom', this.width/2, my + mh - 22);
-    }
-
-    // Ship arrow when panned away
+    // Ship arrow when panned away — drawn in world space before restore
     _drawShipArrow(_c) {
         const screenShipX=this.ship.x;
         const screenShipY=this.ship.y;
-        const sx=screenShipX*this.camera.zoom+this.camera.x;
+        // Only show if ship would be off screen
+        const sx=screenShipX*this.camera.zoom+this.camera.x; // screen x of ship
         const sy=screenShipY*this.camera.zoom+this.camera.y;
         if (sx>0&&sx<this.width&&sy>0&&sy<this.height) return;
+        // Draw in screen space after restore - so we store info and draw later
         this._pendingShipArrow={sx,sy};
     }
 
     _drawBody(c, body, isMoon) {
         const sz=this._citySize(body);
+        // Glow
         if (body.deliveries>=3) {
             const gr=c.createRadialGradient(body.x,body.y,sz*0.5,body.x,body.y,sz*(body.deliveries>=15?5:body.deliveries>=7?3.5:2.2));
             gr.addColorStop(0,'rgba(255,255,255,0.12)'); gr.addColorStop(1,'rgba(0,0,0,0)');
@@ -956,7 +761,7 @@ class SpaceGame {
         c.fillStyle='#55efc4'; c.font='13px "Inter",sans-serif';
         c.fillText(`PILOTI: ${this.pilots.length}`, this.width-22, 36);
         c.fillStyle='rgba(255,255,255,0.3)'; c.font='11px "Inter",sans-serif';
-        c.fillText('[H] flotta  [G] segui nave  [M] macchina gancio  [?] guida', this.width-22, 54);
+        c.fillText('[H] flotta  [G] segui nave  [?] guida', this.width-22, 54);
         if (this.homeBody) { c.fillStyle='#f9ca24'; c.font='12px "Inter",sans-serif'; c.fillText(`⬡ ${this.homeBody.name}`, this.width-22, 72); }
 
         // Zoom indicator
@@ -980,6 +785,7 @@ class SpaceGame {
             this._pendingShipArrow = null;
         }
 
+        // Mobile on-screen buttons
         if (this.isTouchDevice) this._drawMobileButtons();
 
         // Hire menu
@@ -1020,11 +826,13 @@ class SpaceGame {
         const isPlay = ['PLAY','COUNTDOWN','BOOST'].includes(this.launchState);
 
         btns.forEach(btn => {
-            if (btn.flight && !isPlay) return;
+            if (btn.flight && !isPlay) return; // hide flight buttons outside gameplay
 
             const pressed = !!this.mobileKeys[btn.key];
-            const active = (btn.id==='guide' && this.showGuide) || (btn.id==='machine' && this.showMachineMenu);
+            // Active toggle state
+            const active = (btn.id==='guide' && this.showGuide);
 
+            // Outer glow when pressed
             if (pressed || active) {
                 c.beginPath(); c.arc(btn.cx, btn.cy, btn.r*1.55, 0, Math.PI*2);
                 c.fillStyle = btn.flight
@@ -1033,6 +841,7 @@ class SpaceGame {
                 c.fill();
             }
 
+            // Button body
             c.beginPath(); c.arc(btn.cx, btn.cy, btn.r, 0, Math.PI*2);
             let bg;
             if (pressed || active) {
@@ -1044,11 +853,13 @@ class SpaceGame {
             }
             c.fillStyle = bg; c.fill();
 
+            // Border
             c.strokeStyle = pressed || active
                 ? (btn.flight ? (btn.id==='thrust' ? 'rgba(249,202,36,0.9)' : 'rgba(162,155,254,0.9)') : 'rgba(255,255,255,0.8)')
                 : 'rgba(255,255,255,0.22)';
             c.lineWidth = 1.5; c.stroke();
 
+            // Label
             c.fillStyle  = pressed || active ? '#fff' : 'rgba(255,255,255,0.6)';
             c.font       = `bold ${Math.round(btn.r * 0.68)}px "Inter",sans-serif`;
             c.textAlign  = 'center';
@@ -1062,23 +873,27 @@ class SpaceGame {
 
     _drawGuide() {
         const c=this.ctx;
-        const gw=720, gh=480, gx=this.width/2-gw/2, gy=this.height/2-gh/2;
+        const gw=720, gh=460, gx=this.width/2-gw/2, gy=this.height/2-gh/2;
 
+        // Backdrop
         c.fillStyle='rgba(6,7,15,0.96)'; c.fillRect(gx,gy,gw,gh);
         c.strokeStyle='rgba(162,155,254,0.7)'; c.lineWidth=1.5; c.strokeRect(gx,gy,gw,gh);
 
+        // Title
         c.textAlign='center'; c.fillStyle='#a29bfe'; c.font='bold 20px "Inter",sans-serif';
         c.fillText('GUIDA AL GIOCO', this.width/2, gy+32);
         c.strokeStyle='rgba(162,155,254,0.25)'; c.lineWidth=1;
         c.beginPath(); c.moveTo(gx+20,gy+44); c.lineTo(gx+gw-20,gy+44); c.stroke();
 
-        const col1=gx+28, col2=gx+gw/2+14, rowH=24, startY=gy+68;
+        const col1=gx+28, col2=gx+gw/2+14, rowH=26, startY=gy+70;
 
+        // Column headers
         c.fillStyle='rgba(255,255,255,0.35)'; c.font='bold 11px "Inter",sans-serif';
         c.textAlign='left';
         c.fillText('CONTROLLI', col1, startY-8);
         c.fillText('MECCANICHE DI GIOCO', col2, startY-8);
 
+        // Left column — controls
         const ctrl=[
             ['W / ↑','Motore propulsore'],
             ['A / ←','Ruota a sinistra'],
@@ -1087,7 +902,6 @@ class SpaceGame {
             ['Click destro + trascina','Sposta la visuale liberamente'],
             ['G','Ricentra la visuale sulla nave'],
             ['H','Apri menu assumi pilota'],
-            ['M','Apri MACCHINA A GANCIO (nuovo!)'],
             ['?','Apri / chiudi questa guida'],
             ['Logo × 5','Esci dal minigioco'],
             ['ENTER / doppio click','Conferma fondazione città'],
@@ -1100,9 +914,11 @@ class SpaceGame {
             c.fillText(desc, col1+170, y);
         });
 
+        // Divider
         c.strokeStyle='rgba(255,255,255,0.08)'; c.lineWidth=1;
         c.beginPath(); c.moveTo(gx+gw/2,gy+54); c.lineTo(gx+gw/2,gy+gh-50); c.stroke();
 
+        // Right column — mechanics
         const mech=[
             ['🚀 Volo','Avvicinati a un corpo celeste per caricare'],
             ['','o scaricare risorse automaticamente'],
@@ -1115,16 +931,15 @@ class SpaceGame {
             ['','7 consegne → Città  ·  15 → Metropoli'],
             ['👨‍✈️ Flotta','ROOKIE $800 · SPERICOLATO $1500'],
             ['','VETERANO $3000 (evita la fascia)'],
-            ['🎰 Macchina Gancio','Spendi 200 crediti per vincere coins'],
-            ['','8% chance di vincere RUOLO CUSTOM (log webhook)'],
         ];
         mech.forEach(([key,desc],i) => {
             const y=startY+i*rowH;
             if (key) { c.fillStyle='#f9ca24'; c.font='bold 13px "Inter",sans-serif'; c.textAlign='left'; c.fillText(key, col2, y); }
             c.fillStyle='rgba(255,255,255,0.6)'; c.font='12px "Inter",sans-serif';
-            c.fillText(desc, key?col2+155:col2+155, y);
+            c.fillText(desc, key?col2+140:col2+140, y);
         });
 
+        // Footer
         c.fillStyle='rgba(255,255,255,0.25)'; c.font='12px "Inter",sans-serif'; c.textAlign='center';
         c.fillText('[?]  o  [ESC]  per chiudere', this.width/2, gy+gh-16);
     }
