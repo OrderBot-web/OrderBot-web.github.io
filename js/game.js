@@ -17,7 +17,7 @@ class ClawMachineGame {
         this.score = 0;
         this.totalWon = 0;
         this.plays = 0;
-        this.attemptsLeft = 5;           // 5 free attempts at start
+        this.attemptsLeft = 5;
         this.message = '';
         this.messageTimer = 0;
         this.showGuide = false;
@@ -40,7 +40,6 @@ class ClawMachineGame {
         this.keys = {};
         this.mobileKeys = {};
 
-        // Macchina PIÙ GRANDE e centrata
         const mw = Math.min(680, this.width * 0.92);
         this.machine = {
             width: mw,
@@ -125,7 +124,6 @@ class ClawMachineGame {
             return;
         }
 
-        // TORNA ALLA HUB
         const closeW = Math.min(190, this.width * 0.45);
         if (mx > 20 && mx < 20 + closeW && my > this.height - 88 && my < this.height - 36) {
             const container = document.getElementById('game-container');
@@ -154,7 +152,7 @@ class ClawMachineGame {
             this.attemptsLeft--;
         } else {
             if (this.credits < 150) {
-                this.message = 'Crediti insufficienti (150 coins per tiro)';
+                this.message = 'Crediti insufficienti (150 coins)';
                 this.messageTimer = 90;
                 return;
             }
@@ -432,20 +430,20 @@ class ClawMachineGame {
         c.fillText(`SCORE: ${this.score}  •  Vinto: ${this.totalWon}`, this.width - 300, 78);
 
         const bx = this.width - 240, by = this.height - 155;
-        const can = this.credits >= 150 && this.claw.state === 'IDLE';
-        c.fillStyle = can ? '#f9ca24' : '#555';
+        const canPlay = this.claw.state === 'IDLE' && (this.attemptsLeft > 0 || this.credits >= 150);
+        c.fillStyle = canPlay ? '#f9ca24' : '#555';
         c.fillRect(bx, by, 210, 85);
-        c.strokeStyle = can ? '#fff' : '#777';
+        c.strokeStyle = canPlay ? '#fff' : '#777';
         c.lineWidth = 4;
         c.strokeRect(bx, by, 210, 85);
-        c.fillStyle = can ? '#111' : '#aaa';
+        c.fillStyle = canPlay ? '#111' : '#aaa';
         c.font = 'bold 18px "Inter", system-ui';
 
         let btnText = 'LANCIA IL GANCIO';
-        if (!can && this.attemptsLeft === 0) btnText = 'COMPRA TIRO (150$)';
+        if (this.attemptsLeft === 0 && this.credits >= 150) btnText = 'COMPRA TIRO (150$)';
+        if (!canPlay && this.attemptsLeft === 0 && this.credits < 150) btnText = 'CREDITI BASSI';
         c.fillText(btnText, bx + 105, by + 38);
 
-        // Close button
         const closeW = Math.min(190, this.width * 0.45);
         c.fillStyle = 'rgba(35,35,45,0.92)';
         c.fillRect(20, this.height - 88, closeW, 52);
