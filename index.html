@@ -293,6 +293,14 @@
                             Inizia il Viaggio
                         </a>
 
+                        <button
+                            onclick="document.getElementById('game-container').classList.add('active'); if(!window._gameStarted){window._gameStarted=true; new SpaceGame('game-canvas').start();}"
+                            class="btn-secondary service-btn"
+                            style="background:rgba(157,80,187,0.1);border:1px solid rgba(157,80,187,0.3);cursor:pointer;font-family:inherit;font-size:1rem;color:white;">
+                            <i class="fa-solid fa-rocket" style="margin-right:10px;color:#b06cff;"></i>
+                            <span id="game-btn-label">Gioca al Minigioco</span>
+                        </button>
+
                     </div>
 
                 </div>
@@ -476,7 +484,8 @@
                 members: "Membri Attivi",
                 messages: "Messaggi Oggi",
                 uptime: "Uptime Bot",
-                rating: "Valutazione Server"
+                rating: "Valutazione Server",
+                game: "Gioca al Minigioco"
             },
 
             en: {
@@ -494,7 +503,8 @@
                 members: "Active Members",
                 messages: "Messages Today",
                 uptime: "Bot Uptime",
-                rating: "Server Rating"
+                rating: "Server Rating",
+                game: "Play Minigame"
             }
         };
 
@@ -511,6 +521,7 @@
             document.getElementById('service-title').innerHTML = t.serviceTitle;
             document.getElementById('service-text').innerHTML = t.serviceText;
             document.getElementById('journey-btn').innerHTML = t.journey;
+            document.getElementById('game-btn-label').innerHTML = t.game;
 
             document.getElementById('feature-1-title').innerHTML = t.f1t;
             document.getElementById('feature-1-text').innerHTML = t.f1d;
