@@ -18,9 +18,13 @@ class ClawMachineGame {
         this.score = 0;
         this.totalWon = 0;
         this.plays = 0;
+        this.attemptsLeft = 5;          // LIMITED ATTEMPTS to encourage Discord activity
+        this.maxAttempts = 5;
         this.message = '';
         this.messageTimer = 0;
         this.showGuide = false;
+        this.showDiscordPrompt = false; // when attempts are 0
+        this._btnPressed = false;       // for button press visual feedback
 
         // ── Claw Machine Physics & State ──────────────────────────────────
         this.claw = {
@@ -123,32 +127,64 @@ class ClawMachineGame {
         const mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const my = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-        // Big drop button area (bottom right)
-        const btnX = this.width - 220, btnY = this.height - 140;
-        if (mx > btnX && mx < btnX + 180 && my > btnY && my < btnY + 70) {
+        // Discord claim button (when prompt is shown)
+        if (this.showDiscordPrompt) {
+            const pw = 620, ph = 280;
+            const px = this.width/2 - pw/2;
+            const py = this.height/2 - ph/2 - 30;
+            const claimY = py + 160;
+            if (mx > px + 80 && mx < px + pw - 80 && my > claimY && my < claimY + 58) {
+                this.attemptsLeft = this.maxAttempts;
+                this.showDiscordPrompt = false;
+                this.message = 'Grazie! +5 tentativi sbloccati ❤️';
+                this.messageTimer = 120;
+                return;
+            }
+            return; // block other clicks when prompt is open
+        }
+
+        // Big LANCIA button (improved area)
+        const btnX = this.width - 240, btnY = this.height - 155;
+        const btnW = 210, btnH = 85;
+        if (mx > btnX && mx < btnX + btnW && my > btnY && my < btnY + btnH) {
+            this._btnPressed = true;
+            setTimeout(() => { this._btnPressed = false; }, 120);
             if (this.claw.state === 'IDLE') this._startDrop();
             return;
         }
 
-        // Left / Right zones on screen for mobile feel
+        // Small RICARICA button
+        const rX = btnX - 130, rY = btnY + 15;
+        if (mx > rX && mx < rX + 110 && my > rY && my < rY + 55) {
+            this._resetMachine();
+            return;
+        }
+
+        // Left / Right zones for mobile claw movement
         if (this.claw.state === 'IDLE') {
-            if (mx < this.width * 0.25) {
+            if (mx < this.width * 0.22) {
                 this.mobileKeys['left'] = true;
-                setTimeout(() => { this.mobileKeys['left'] = false; }, 180);
-            } else if (mx > this.width * 0.75) {
+                setTimeout(() => { this.mobileKeys['left'] = false; }, 160);
+            } else if (mx > this.width * 0.78) {
                 this.mobileKeys['right'] = true;
-                setTimeout(() => { this.mobileKeys['right'] = false; }, 180);
-            } else {
-                // tap in middle = drop
+                setTimeout(() => { this.mobileKeys['right'] = false; }, 160);
+            } else if (my > this.height * 0.65) {
+                // tap lower area = drop
                 this._startDrop();
             }
         }
     }
 
     _startDrop() {
-        if (this.credits < 200 || this.claw.state !== 'IDLE') return;
+        if (this.credits < 200 || this.claw.state !== 'IDLE' || this.attemptsLeft <= 0) {
+            if (this.attemptsLeft <= 0) {
+                this.showDiscordPrompt = true;
+            }
+            return;
+        }
         this.credits -= 200;
         this.plays++;
+        this.attemptsLeft--;
         this.claw.state = 'DROPPING';
         this.armLength = 40;
         this.claw.grabOffset = 0;
@@ -538,6 +574,46 @@ class ClawMachineGame {
 
         // Guide overlay
         if (this.showGuide) this._drawGuide(c);
+
+        // Discord activity prompt when attempts are finished
+        if (this.showDiscordPrompt && this.attemptsLeft <= 0) {
+            const pw = 620, ph = 280;
+            const px = this.width/2 - pw/2;
+            const py = this.height/2 - ph/2 - 30;
+
+            c.fillStyle = 'rgba(10,12,20,0.97)';
+            c.fillRect(px, py, pw, ph);
+            c.strokeStyle = '#f9ca24';
+            c.lineWidth = 4;
+            c.strokeRect(px, py, pw, ph);
+
+            c.fillStyle = '#f9ca24';
+            c.font = 'bold 24px "Inter", system-ui';
+            c.textAlign = 'center';
+            c.fillText('🎰 TENTATIVI ESAURITI!', this.width/2, py + 45);
+
+            c.fillStyle = 'rgba(255,255,255,0.85)';
+            c.font = '16px "Inter", system-ui';
+            c.fillText('Per sbloccare altri 5 tentativi e continuare a giocare:', this.width/2, py + 85);
+            c.fillText('scrivi almeno 8 messaggi nel canale Discord del server', this.width/2, py + 108);
+            c.fillText('e poi clicca il pulsante qui sotto.', this.width/2, py + 131);
+
+            // Big claim button
+            const claimY = py + 160;
+            c.fillStyle = '#55efc4';
+            c.fillRect(px + 80, claimY, pw - 160, 58);
+            c.strokeStyle = '#fff';
+            c.lineWidth = 3;
+            c.strokeRect(px + 80, claimY, pw - 160, 58);
+
+            c.fillStyle = '#111';
+            c.font = 'bold 18px "Inter", system-ui';
+            c.fillText('HO SCRITTO I MESSAGGI! +5 TENTATIVI', this.width/2, claimY + 37);
+
+            c.fillStyle = 'rgba(255,255,255,0.5)';
+            c.font = '13px "Inter", system-ui';
+            c.fillText('Questo aiuta a creare attività nel server Discord ❤️', this.width/2, py + ph - 22);
+        }
     }
 
     _drawHUD(c) {
@@ -552,39 +628,70 @@ class ClawMachineGame {
         c.stroke();
 
         c.fillStyle = '#f9ca24';
-        c.font = 'bold 28px "Inter", system-ui';
+        c.font = 'bold 26px "Inter", system-ui';
         c.textAlign = 'left';
         c.fillText('🎰  MACCHINA A GANCIO', 30, 42);
 
         c.fillStyle = '#55efc4';
         c.font = 'bold 20px "Inter", system-ui';
-        c.fillText(`$ ${this.credits}`, this.width - 280, 42);
+        c.fillText(`$ ${this.credits}`, this.width - 300, 42);
+
+        // Attempts counter (important!)
+        const attColor = this.attemptsLeft > 2 ? '#55efc4' : this.attemptsLeft > 0 ? '#f9ca24' : '#d63031';
+        c.fillStyle = attColor;
+        c.font = 'bold 18px "Inter", system-ui';
+        c.fillText(`Tentativi: ${this.attemptsLeft}/${this.maxAttempts}`, this.width - 300, 62);
 
         c.fillStyle = 'rgba(255,255,255,0.6)';
-        c.font = '15px "Inter", system-ui';
-        c.fillText(`SCORE: ${this.score}   •   Vinto totale: ${this.totalWon}`, this.width - 280, 60);
+        c.font = '14px "Inter", system-ui';
+        c.fillText(`SCORE: ${this.score}  •  Vinto: ${this.totalWon}`, this.width - 300, 78);
 
-        // Big PLAY button
-        const btnX = this.width - 220, btnY = this.height - 140;
-        const canPlay = this.credits >= 200 && this.claw.state === 'IDLE';
-        c.fillStyle = canPlay ? '#f9ca24' : '#444';
-        c.fillRect(btnX, btnY, 180, 70);
-        c.strokeStyle = canPlay ? '#fff' : '#666';
-        c.lineWidth = 3;
-        c.strokeRect(btnX, btnY, 180, 70);
+        // Big improved PLAY button (with press feedback)
+        const btnX = this.width - 240, btnY = this.height - 155;
+        const btnW = 210, btnH = 85;
+        const canPlay = this.credits >= 200 && this.claw.state === 'IDLE' && this.attemptsLeft > 0;
+
+        // Button shadow + press effect
+        if (this._btnPressed) {
+            c.fillStyle = '#c9a227';
+            c.fillRect(btnX + 3, btnY + 3, btnW, btnH);
+        } else {
+            c.fillStyle = 'rgba(0,0,0,0.4)';
+            c.fillRect(btnX + 4, btnY + 4, btnW, btnH);
+        }
+
+        c.fillStyle = canPlay ? '#f9ca24' : '#555';
+        c.fillRect(btnX, btnY, btnW, btnH);
+        c.strokeStyle = canPlay ? '#fff' : '#777';
+        c.lineWidth = 4;
+        c.strokeRect(btnX, btnY, btnW, btnH);
 
         c.fillStyle = canPlay ? '#111' : '#aaa';
-        c.font = 'bold 18px "Inter", system-ui';
+        c.font = 'bold 20px "Inter", system-ui';
         c.textAlign = 'center';
-        c.fillText(canPlay ? 'PREMI SPAZIO' : 'CREDITI BASSI', btnX + 90, btnY + 32);
-        c.font = '13px "Inter", system-ui';
-        c.fillText('o tocca qui', btnX + 90, btnY + 52);
+        c.fillText(canPlay ? 'LANCIA IL GANCIO' : (this.attemptsLeft <= 0 ? 'TENTATIVI FINITI' : 'CREDITI BASSI'), btnX + btnW/2, btnY + 38);
 
-        // Instructions line
-        c.fillStyle = 'rgba(255,255,255,0.45)';
         c.font = '13px "Inter", system-ui';
+        c.fillText(canPlay ? 'SPAZIO o TAP qui' : '', btnX + btnW/2, btnY + 60);
+
+        // Small Ricarica button
+        const rX = btnX - 130, rY = btnY + 15;
+        c.fillStyle = '#3a4255';
+        c.fillRect(rX, rY, 110, 55);
+        c.strokeStyle = '#a29bfe';
+        c.lineWidth = 2;
+        c.strokeRect(rX, rY, 110, 55);
+        c.fillStyle = '#a29bfe';
+        c.font = 'bold 14px "Inter", system-ui';
+        c.fillText('RICARICA', rX + 55, rY + 24);
+        c.font = '11px "Inter", system-ui';
+        c.fillText('(R)', rX + 55, rY + 42);
+
+        // Instructions
+        c.fillStyle = 'rgba(255,255,255,0.4)';
+        c.font = '12px "Inter", system-ui';
         c.textAlign = 'center';
-        c.fillText('← →  Muovi il gancio   •   SPAZIO / TAP  =  Lancia   •   R = Ricarica   •   ? = Guida', this.width/2, this.height - 25);
+        c.fillText('← → Muovi  •  SPAZIO/TAP = Lancia  •  R = Ricarica  •  ? = Guida  •  Tentativi limitati per attività Discord', this.width/2, this.height - 22);
     }
 
     _drawGuide(c) {
@@ -655,7 +762,7 @@ class ClawMachineGame {
     }
 }
 
-// ── Boot ────────────────────────────────────────────────────────────────
+// ── Boot (clean start with button at the beginning) ─────────────────────
 let gameInstance = null;
 
 function startGame() {
@@ -666,24 +773,11 @@ function startGame() {
     }
 }
 
-// Auto-start or secret trigger (same pattern as before)
-const secret = document.getElementById('secret-trigger');
-if (secret) {
-    let clicks = 0;
-    secret.addEventListener('click', e => {
-        e.preventDefault();
-        if (++clicks >= 5) {
-            startGame();
-            clicks = 0;
-        }
-    });
-}
-
-// Also allow direct start if canvas exists
+// Clean auto-start (no more 5-click secret)
 window.addEventListener('load', () => {
     const canvas = document.getElementById('game-canvas');
-    if (canvas && !gameInstance) {
-        // Uncomment next line if you want auto-start without clicking logo 5 times
-        // startGame();
+    if (canvas) {
+        // Start immediately with the big button visible from the beginning
+        startGame();
     }
 });
