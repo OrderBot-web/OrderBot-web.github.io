@@ -39,17 +39,17 @@ class ClawMachineGame {
         this.keys = {};
         this.mobileKeys = {};
 
-        // Macchina centrata e responsive
-        const mw = Math.min(620, this.width * 0.92);
+        // Macchina centrata + buona su telefono
+        const mw = Math.min(620, this.width * 0.96);
         this.machine = {
             width: mw,
-            height: 520,
+            height: Math.min(520, this.height * 0.68),
             left: (this.width - mw) / 2,
-            top: 70,
-            glassLeft: (this.width - mw) / 2 + 18,
-            glassTop: 105,
-            glassW: mw - 36,
-            glassH: 390
+            top: 90,
+            glassLeft: (this.width - mw) / 2 + 12,
+            glassTop: 125,
+            glassW: mw - 24,
+            glassH: Math.min(380, this.height * 0.52)
         };
 
         this._genPrizes();
@@ -110,6 +110,7 @@ class ClawMachineGame {
         const mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const my = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
+        // Big LANCIA button
         const btnX = this.width - 240, btnY = this.height - 155;
         if (mx > btnX && mx < btnX + 210 && my > btnY && my < btnY + 85) {
             this._btnPressed = true;
@@ -118,13 +119,14 @@ class ClawMachineGame {
             return;
         }
 
+        // RICARICA button
         const rX = btnX - 130, rY = btnY + 15;
         if (mx > rX && mx < rX + 110 && my > rY && my < rY + 55) {
             this._resetMachine();
             return;
         }
 
-        // Torna alla HUB
+        // TORNA ALLA HUB button (mobile friendly)
         const closeW = Math.min(190, this.width * 0.45);
         if (mx > 20 && mx < 20 + closeW && my > this.height - 88 && my < this.height - 36) {
             const container = document.getElementById('game-container');
@@ -133,6 +135,7 @@ class ClawMachineGame {
             return;
         }
 
+        // Mobile movement zones
         if (this.claw.state === 'IDLE') {
             if (mx < this.width * 0.22) {
                 this.mobileKeys['left'] = true;
@@ -436,7 +439,7 @@ class ClawMachineGame {
         c.font = 'bold 20px "Inter", system-ui';
         c.fillText(can ? 'LANCIA IL GANCIO' : 'CREDITI BASSI', bx + 105, by + 38);
 
-        // Close button
+        // Close button (mobile friendly)
         const closeW = Math.min(190, this.width * 0.45);
         c.fillStyle = 'rgba(35,35,45,0.92)';
         c.fillRect(20, this.height - 88, closeW, 52);
