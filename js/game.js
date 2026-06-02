@@ -56,27 +56,27 @@ class SpaceGame {
 
         // ── Planets ────────────────────────────────────────────────────────
         this.planets = [
-            { id:'mercurio', name:'MERCURIO', dist:110,  size:6,  color:'#b2bec3', speed:0.016,  res:'SOLARE',       req:'FILTRI',    deliveries:0, crisis:null },
-            { id:'venere',   name:'VENERE',   dist:170,  size:9,  color:'#e17055', speed:0.009,  res:'ACIDO',        req:'CIBO',      deliveries:0, crisis:null },
-            { id:'terra',    name:'TERRA',    dist:250,  size:11, color:'#0984e3', speed:0.005,  res:'CIBO',         req:'ELIO-3',    deliveries:0, crisis:null },
-            { id:'marte',    name:'MARTE',    dist:390,  size:9,  color:'#d63031', speed:0.004,  res:'FERRO',        req:'ACQUA',     deliveries:0, crisis:null },
-            { id:'giove',    name:'GIOVE',    dist:620,  size:24, color:'#e67e22', speed:0.0012, res:'GAS',          req:'CHIPS',     deliveries:0, crisis:null },
-            { id:'saturno',  name:'SATURNO',  dist:880,  size:20, color:'#f9ca24', speed:0.0008, res:'GHIACCIO',    req:'MEDS',      deliveries:0, crisis:null, rings:true },
-            { id:'urano',    name:'URANO',    dist:1130, size:16, color:'#81ecec', speed:0.0005, res:'DIAMANTI',    req:'GAS',       deliveries:0, crisis:null },
-            { id:'nettuno',  name:'NETTUNO',  dist:1450, size:16, color:'#6c5ce7', speed:0.0003, res:'ENERGIA',     req:'DIAMANTI',  deliveries:0, crisis:null },
+            { id:'mercurio', name:'PYROS',   dist:110,  size:6,  color:'#b2bec3', speed:0.016,  res:'SOLARE',       req:'FILTRI',    deliveries:0, crisis:null },
+            { id:'venere',   name:'MYRRHA',  dist:170,  size:9,  color:'#e17055', speed:0.009,  res:'ACIDO',        req:'CIBO',      deliveries:0, crisis:null },
+            { id:'terra',    name:'ORIGIN',  dist:250,  size:11, color:'#0984e3', speed:0.005,  res:'CIBO',         req:'ELIO-3',    deliveries:0, crisis:null },
+            { id:'marte',    name:'ARES',    dist:390,  size:9,  color:'#d63031', speed:0.004,  res:'FERRO',        req:'ACQUA',     deliveries:0, crisis:null },
+            { id:'giove',    name:'JOVIS',   dist:620,  size:24, color:'#e67e22', speed:0.0012, res:'GAS',          req:'CHIPS',     deliveries:0, crisis:null },
+            { id:'saturno',  name:'KRONOS',  dist:880,  size:20, color:'#f9ca24', speed:0.0008, res:'GHIACCIO',    req:'MEDS',      deliveries:0, crisis:null, rings:true },
+            { id:'urano',    name:'OURAN',   dist:1130, size:16, color:'#81ecec', speed:0.0005, res:'DIAMANTI',    req:'GAS',       deliveries:0, crisis:null },
+            { id:'nettuno',  name:'POSEID',  dist:1450, size:16, color:'#6c5ce7', speed:0.0003, res:'ENERGIA',     req:'DIAMANTI',  deliveries:0, crisis:null },
         ];
         this.moons = [
-            { id:'luna',     name:'LUNA',     parent:'terra',   dist:32, size:5,  color:'#dfe6e9', speed:0.030, res:'ELIO-3',      req:'CIBO',     deliveries:0, crisis:null },
-            { id:'phobos',   name:'PHOBOS',   parent:'marte',   dist:22, size:3,  color:'#b2bec3', speed:0.080, res:'ACQUA',       req:'FERRO',    deliveries:0, crisis:null },
-            { id:'deimos',   name:'DEIMOS',   parent:'marte',   dist:38, size:3,  color:'#95a5a6', speed:0.040, res:'SILICIO',     req:'ENERGIA',  deliveries:0, crisis:null },
-            { id:'io',       name:'IO',       parent:'giove',   dist:40, size:5,  color:'#f9ca24', speed:0.055, res:'ZOLFO',      req:'GAS',      deliveries:0, crisis:null },
-            { id:'europa',   name:'EUROPA',   parent:'giove',   dist:56, size:5,  color:'#dfe6e9', speed:0.035, res:'ACQUA',      req:'CHIPS',    deliveries:0, crisis:null },
-            { id:'ganimede', name:'GANIMEDE', parent:'giove',   dist:74, size:6,  color:'#636e72', speed:0.022, res:'GHIACCIO',   req:'MEDS',     deliveries:0, crisis:null },
-            { id:'callisto', name:'CALLISTO', parent:'giove',   dist:94, size:5,  color:'#2d3436', speed:0.014, res:'MINERALI',   req:'CIBO',     deliveries:0, crisis:null },
-            { id:'titano',   name:'TITANO',   parent:'saturno', dist:62, size:6,  color:'#fdcb6e', speed:0.020, res:'IDROCARBURI',req:'FILTRI',   deliveries:0, crisis:null },
-            { id:'encelado', name:'ENCELADO', parent:'saturno', dist:42, size:4,  color:'#f5f6fa', speed:0.040, res:'ACQUA',      req:'MINERALI', deliveries:0, crisis:null },
-            { id:'titania',  name:'TITANIA',  parent:'urano',   dist:52, size:5,  color:'#81ecec', speed:0.028, res:'CRISTALLI',  req:'ENERGIA',  deliveries:0, crisis:null },
-            { id:'tritone',  name:'TRITONE',  parent:'nettuno', dist:46, size:5,  color:'#74b9ff', speed:0.025, res:'AZOTO',      req:'DIAMANTI', deliveries:0, crisis:null },
+            { id:'luna',     name:'SELENE',   parent:'terra',   dist:32, size:5,  color:'#dfe6e9', speed:0.030, res:'ELIO-3',      req:'CIBO',     deliveries:0, crisis:null },
+            { id:'phobos',   name:'SHARD',    parent:'marte',   dist:22, size:3,  color:'#b2bec3', speed:0.080, res:'ACQUA',       req:'FERRO',    deliveries:0, crisis:null },
+            { id:'deimos',   name:'ECHO',     parent:'marte',   dist:38, size:3,  color:'#95a5a6', speed:0.040, res:'SILICIO',     req:'ENERGIA',  deliveries:0, crisis:null },
+            { id:'io',       name:'VULCAN',   parent:'giove',   dist:40, size:5,  color:'#f9ca24', speed:0.055, res:'ZOLFO',      req:'GAS',      deliveries:0, crisis:null },
+            { id:'europa',   name:'AQUA',     parent:'giove',   dist:56, size:5,  color:'#dfe6e9', speed:0.035, res:'ACQUA',      req:'CHIPS',    deliveries:0, crisis:null },
+            { id:'ganimede', name:'GANYM',    parent:'giove',   dist:74, size:6,  color:'#636e72', speed:0.022, res:'GHIACCIO',   req:'MEDS',     deliveries:0, crisis:null },
+            { id:'callisto', name:'CALLIS',   parent:'giove',   dist:94, size:5,  color:'#2d3436', speed:0.014, res:'MINERALI',   req:'CIBO',     deliveries:0, crisis:null },
+            { id:'titano',   name:'TITAN',    parent:'saturno', dist:62, size:6,  color:'#fdcb6e', speed:0.020, res:'IDROCARBURI',req:'FILTRI',   deliveries:0, crisis:null },
+            { id:'encelado', name:'ICE',      parent:'saturno', dist:42, size:4,  color:'#f5f6fa', speed:0.040, res:'ACQUA',      req:'MINERALI', deliveries:0, crisis:null },
+            { id:'titania',  name:'CRYSTAL',  parent:'urano',   dist:52, size:5,  color:'#81ecec', speed:0.028, res:'CRISTALLI',  req:'ENERGIA',  deliveries:0, crisis:null },
+            { id:'tritone',  name:'TRITON',   parent:'nettuno', dist:46, size:5,  color:'#74b9ff', speed:0.025, res:'AZOTO',      req:'DIAMANTI', deliveries:0, crisis:null },
         ];
         this.allBodies = [...this.planets, ...this.moons];
 
@@ -577,7 +577,7 @@ class SpaceGame {
             this.ship.vy+=Math.sin(this.ship.angle)*accel;
         }
         const dSun=Math.sqrt(this.ship.x**2+this.ship.y**2);
-        if (dSun<this.sun.size+4) { this.gameOver('BRUCIATO DAL SOLE'); return; }
+        if (dSun<this.sun.size+4) { this.gameOver('BRUCIATO DALLA STELLA'); return; }
         const force=this.G*300/(dSun**2);
         this.ship.vx-=(this.ship.x/dSun)*force; this.ship.vy-=(this.ship.y/dSun)*force;
         if (dSun>this.mapLimit) { this.ship.vx-=(this.ship.x/dSun)*2; this.ship.vy-=(this.ship.y/dSun)*2; }
@@ -916,7 +916,7 @@ class SpaceGame {
         c.fillStyle='rgba(255,255,255,0.5)'; c.font='14px "Inter",sans-serif';
         c.fillText('Clicca un pianeta o luna  ·  doppio click o ENTER per confermare  ·  scroll per zoomare  ·  click dx per spostare', this.width/2, 72);
         c.fillStyle='#0984e3'; c.font='12px "Inter",sans-serif';
-        c.fillText('La Terra è il punto di partenza — non può essere fondata', this.width/2, 96);
+        c.fillText('ORIGIN è il punto di partenza — non può essere fondata', this.width/2, 96);
         if (!this.selectedBody) return;
         const s=this.selectedBody, bonus=Math.floor(s.dist*2.5);
         const cw=470,ch=110,cx=this.width/2-cw/2,cy=this.height-ch-22;
@@ -1110,7 +1110,7 @@ class SpaceGame {
             ['','scada — o la città muore (Game Over)'],
             ['⚖ Carico','Più merci = nave più lenta e pesante'],
             ['☀ Sole','Zona letale — la gravità ti attira'],
-            ['🪨 Asteroidi','Tra Marte e Giove: −1 scafo per impatto'],
+            ['🪨 Asteroidi','Nella fascia asteroidi: −1 scafo per impatto'],
             ['🏙 Città','3 consegne → Colonia'],
             ['','7 consegne → Città  ·  15 → Metropoli'],
             ['👨‍✈️ Flotta','ROOKIE $800 · SPERICOLATO $1500'],
