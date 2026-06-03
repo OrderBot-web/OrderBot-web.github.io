@@ -292,22 +292,22 @@
                             <i class="fa-brands fa-discord" style="margin-right:10px;"></i>
                             Inizia il Viaggio
                         </a>
+                        
+<button
+    onclick="
+        const container = document.getElementById('game-container');
+        container.classList.add('active');
 
-                        <button
-                            onclick="
-                                const container = document.getElementById('game-container');
-                                container.classList.add('active');
- 
-                                if (!window.currentGame) {
-                                window.currentGame = new SpaceGame('game-canvas');
-                                }
-                                window.currentGame.start();
-                            "
-                            class="btn-secondary service-btn"
-                            style="background:rgba(157,80,187,0.1);border:1px solid rgba(157,80,187,0.3);cursor:pointer;font-family:inherit;font-size:1rem;color:white;">
-                            <i class="fa-solid fa-rocket" style="margin-right:10px;color:#b06cff;"></i>
-                            <span id="game-btn-label">Gioca al Minigioco</span>
-                        </button>
+        if (!window.currentGame) {
+            window.currentGame = new SpaceGame('game-canvas');
+        }
+        window.currentGame.start();
+    "
+    class="btn-secondary service-btn"
+    style="background:rgba(157,80,187,0.1);border:1px solid rgba(157,80,187,0.3);cursor:pointer;font-family:inherit;font-size:1rem;color:white;">
+    <i class="fa-solid fa-rocket" style="margin-right:10px;color:#b06cff;"></i>
+    <span id="game-btn-label">Gioca al Minigioco</span>
+</button>
 
                     </div>
 
@@ -447,9 +447,6 @@
         </div>
 
     </footer>
-
-    <!-- Secret trigger (Easter egg, kept for compatibility) -->
-    <span id="secret-trigger" style="display:none;"></span>
 
     <!-- GAME -->
     <div id="game-container" class="game-overlay">
