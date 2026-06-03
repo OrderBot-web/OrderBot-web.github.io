@@ -294,15 +294,7 @@
                         </a>
                         
 <button
-    onclick="
-        const container = document.getElementById('game-container');
-        container.classList.add('active');
-
-        if (!window.currentGame) {
-            window.currentGame = new SpaceGame('game-canvas');
-        }
-        window.currentGame.start();
-    "
+    onclick="startClawMachine()"
     class="btn-secondary service-btn"
     style="background:rgba(157,80,187,0.1);border:1px solid rgba(157,80,187,0.3);cursor:pointer;font-family:inherit;font-size:1rem;color:white;">
     <i class="fa-solid fa-rocket" style="margin-right:10px;color:#b06cff;"></i>
