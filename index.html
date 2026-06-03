@@ -544,5 +544,28 @@
         setLanguage(localStorage.getItem('galaxy_lang') || 'it');
     </script>
 
+<script>
+function startClawMachine() {
+    const container = document.getElementById('game-container');
+    container.classList.add('active');
+
+    // Chiede il nome Discord
+    let name = prompt("Inserisci il tuo nome Discord (es. Giovanni#1234):");
+
+    if (!name || name.trim() === "") {
+        name = "Anonimo";
+    }
+
+    // Salva il nome
+    window.playerDiscordName = name.trim();
+
+    // Avvia il gioco
+    if (!window.currentGame) {
+        window.currentGame = new SpaceGame('game-canvas');
+    }
+    window.currentGame.start();
+}
+</script>
+
 </body>
 </html>
