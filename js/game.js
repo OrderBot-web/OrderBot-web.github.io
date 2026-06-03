@@ -181,7 +181,7 @@ class SpaceGame {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: `🎰 **${playerName}** ha vinto il **PREMIO RARISSIMO** nella Macchina a Gancio!`,
+                    content: `🎰 **${playerName}** ha vinto il **PREMIO RARO** nella Macchina a Gancio!`,
                     embeds: [{
                         title: "🎁 Vincita Rara - Macchina a Gancio",
                         description: `**${playerName}** ha ottenuto il premio leggendario!\nPunteggio: **${this.score}**`,
