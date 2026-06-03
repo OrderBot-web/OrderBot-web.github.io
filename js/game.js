@@ -48,7 +48,6 @@ class SpaceGame {
         });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
-        // Rileva se è un dispositivo mobile
         this.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         if (this.isMobile) {
@@ -58,7 +57,6 @@ class SpaceGame {
         this.resetClawMachine();
     }
 
-    // ==================== CONTROLLI MOBILE ====================
     createMobileControls() {
         const controls = document.createElement('div');
         controls.id = 'mobile-controls';
@@ -89,7 +87,6 @@ class SpaceGame {
         let intervalLeft = null;
         let intervalRight = null;
 
-        // Sinistra (movimento continuo)
         btnLeft.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.moveClaw(-18);
@@ -98,7 +95,6 @@ class SpaceGame {
         btnLeft.addEventListener('touchend', () => clearInterval(intervalLeft));
         btnLeft.addEventListener('touchcancel', () => clearInterval(intervalLeft));
 
-        // Destra (movimento continuo)
         btnRight.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.moveClaw(18);
@@ -107,13 +103,11 @@ class SpaceGame {
         btnRight.addEventListener('touchend', () => clearInterval(intervalRight));
         btnRight.addEventListener('touchcancel', () => clearInterval(intervalRight));
 
-        // Scendi
         btnDrop.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.dropClaw();
         });
 
-        // Supporto mouse (per test)
         btnLeft.addEventListener('mousedown', () => {
             this.moveClaw(-18);
             intervalLeft = setInterval(() => this.moveClaw(-18), 110);
@@ -148,7 +142,7 @@ class SpaceGame {
         this.prizes = [];
 
         const totalBalls = 250;
-        const winningBalls = 25;
+        const winningBalls = 10; // 10 palline vincenti
 
         for (let i = 0; i < totalBalls; i++) {
             const isWinning = i < winningBalls;
@@ -249,7 +243,6 @@ class SpaceGame {
 
     async sendDiscordWebhook() {
         if (!DISCORD_WEBHOOK_URL) return;
-
         const playerName = window.playerDiscordName || "Anonimo";
 
         try {
@@ -295,6 +288,7 @@ class SpaceGame {
             c.beginPath();
             c.arc(p.x - p.size * 0.2, p.y - p.size * 0.2, p.size * 0.2, 0, Math.PI * 2);
             c.fill();
+
             c.shadowBlur = 0;
         });
 
