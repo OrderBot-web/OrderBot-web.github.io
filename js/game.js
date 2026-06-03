@@ -17,6 +17,7 @@ class SpaceGame {
         this.clawState = 'idle';
         this.clawOpen = true;
         this.prizes = [];
+        this.isMobile = false;
 
         this.init();
     }
@@ -47,10 +48,91 @@ class SpaceGame {
         });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
+        // Rileva se è un dispositivo mobile
+        this.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        if (this.isMobile) {
+            this.createMobileControls();
+        }
+
         this.resetClawMachine();
     }
 
+    // ==================== CONTROLLI MOBILE ====================
+    createMobileControls() {
+        const controls = document.createElement('div');
+        controls.id = 'mobile-controls';
+        controls.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 9999;
+            user-select: none;
+            touch-action: none;
+        `;
+
+        controls.innerHTML = `
+            <button id="btn-left" style="width:70px;height:70px;font-size:32px;border-radius:50%;background:#1f1f2e;color:white;border:3px solid #555;">←</button>
+            <button id="btn-drop" style="width:85px;height:70px;font-size:26px;border-radius:12px;background:#c0392b;color:white;border:3px solid #e74c3c;font-weight:bold;">↓</button>
+            <button id="btn-right" style="width:70px;height:70px;font-size:32px;border-radius:50%;background:#1f1f2e;color:white;border:3px solid #555;">→</button>
+        `;
+
+        document.body.appendChild(controls);
+
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnDrop = document.getElementById('btn-drop');
+
+        let intervalLeft = null;
+        let intervalRight = null;
+
+        // Sinistra (movimento continuo)
+        btnLeft.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.moveClaw(-18);
+            intervalLeft = setInterval(() => this.moveClaw(-18), 110);
+        });
+        btnLeft.addEventListener('touchend', () => clearInterval(intervalLeft));
+        btnLeft.addEventListener('touchcancel', () => clearInterval(intervalLeft));
+
+        // Destra (movimento continuo)
+        btnRight.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.moveClaw(18);
+            intervalRight = setInterval(() => this.moveClaw(18), 110);
+        });
+        btnRight.addEventListener('touchend', () => clearInterval(intervalRight));
+        btnRight.addEventListener('touchcancel', () => clearInterval(intervalRight));
+
+        // Scendi
+        btnDrop.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.dropClaw();
+        });
+
+        // Supporto mouse (per test)
+        btnLeft.addEventListener('mousedown', () => {
+            this.moveClaw(-18);
+            intervalLeft = setInterval(() => this.moveClaw(-18), 110);
+        });
+        btnLeft.addEventListener('mouseup', () => clearInterval(intervalLeft));
+        btnLeft.addEventListener('mouseleave', () => clearInterval(intervalLeft));
+
+        btnRight.addEventListener('mousedown', () => {
+            this.moveClaw(18);
+            intervalRight = setInterval(() => this.moveClaw(18), 110);
+        });
+        btnRight.addEventListener('mouseup', () => clearInterval(intervalRight));
+        btnRight.addEventListener('mouseleave', () => clearInterval(intervalRight));
+
+        btnDrop.addEventListener('click', () => this.dropClaw());
+    }
+
     moveClaw(amount) {
+        if (this.clawState !== 'idle') return;
         this.clawX = Math.max(100, Math.min(this.width - 100, this.clawX + amount));
     }
 
@@ -66,7 +148,7 @@ class SpaceGame {
         this.prizes = [];
 
         const totalBalls = 250;
-        const winningBalls = 25; // 25 palline vincenti
+        const winningBalls = 25;
 
         for (let i = 0; i < totalBalls; i++) {
             const isWinning = i < winningBalls;
@@ -79,7 +161,6 @@ class SpaceGame {
             });
         }
 
-        // Mischia le palline
         this.prizes.sort(() => Math.random() - 0.5);
     }
 
@@ -95,11 +176,9 @@ class SpaceGame {
         if (this.clawState === 'dropping') {
             this.clawY += 5.5;
 
-            // Prende le palline ovunque mentre scende
             for (let i = 0; i < this.prizes.length; i++) {
                 const p = this.prizes[i];
                 const dist = Math.hypot(this.clawX - p.x, this.clawY - p.y);
-
                 const chance = p.type === 'rare' ? 0.85 : 0.30;
 
                 if (dist < p.size + 10 && Math.random() < chance) {
@@ -119,7 +198,6 @@ class SpaceGame {
 
         if (this.clawState === 'returning') {
             this.clawY -= 6.5;
-
             if (this.clawY <= 90) {
                 this.clawY = 90;
                 this.clawState = 'idle';
@@ -133,9 +211,7 @@ class SpaceGame {
         }
 
         this.particles = this.particles.filter(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life--;
+            p.x += p.vx; p.y += p.vy; p.life--;
             return p.life > 0;
         });
 
@@ -146,7 +222,7 @@ class SpaceGame {
         if (!this.wonPrize) return;
 
         if (this.wonPrize.type === 'rare') {
-            this.message = '🎉 PREMIO RARISSIMO!';
+            this.message = '🎉 PREMIO RARO!';
             this.messageTimer = 230;
             this.score += 6000;
             this.createParticles(this.clawX, this.clawY - 8, 70, '#ffd700');
@@ -198,23 +274,18 @@ class SpaceGame {
         c.fillStyle = '#0a0a12';
         c.fillRect(0, 0, this.width, this.height);
 
-        // Macchina
         c.fillStyle = '#11111a';
         c.fillRect(35, 22, this.width - 70, this.height - 38);
-
         c.strokeStyle = '#2a2a42';
         c.lineWidth = 5;
         c.strokeRect(35, 22, this.width - 70, this.height - 38);
 
-        // Vetro
-        c.fillStyle = 'rgba(15, 15, 45, 0.06)';
+        c.fillStyle = 'rgba(15,15,45,0.06)';
         c.fillRect(40, 27, this.width - 80, this.height - 48);
 
-        // 250 Palline
         this.prizes.forEach(p => {
             c.shadowBlur = 3;
             c.shadowColor = '#4fc3f7';
-
             c.fillStyle = p.color;
             c.beginPath();
             c.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -224,11 +295,9 @@ class SpaceGame {
             c.beginPath();
             c.arc(p.x - p.size * 0.2, p.y - p.size * 0.2, p.size * 0.2, 0, Math.PI * 2);
             c.fill();
-
             c.shadowBlur = 0;
         });
 
-        // Braccio
         c.strokeStyle = '#cccccc';
         c.lineWidth = 6;
         c.beginPath();
@@ -236,7 +305,6 @@ class SpaceGame {
         c.lineTo(this.clawX, this.clawY);
         c.stroke();
 
-        // Artiglio
         const openOffset = this.clawOpen ? 12 : 3;
         c.fillStyle = '#e8e8e8';
 
@@ -254,7 +322,6 @@ class SpaceGame {
         c.lineTo(this.clawX, this.clawY + 2);
         c.fill();
 
-        // Particelle
         this.particles.forEach(p => {
             c.globalAlpha = p.life / 70;
             c.fillStyle = p.color;
@@ -264,18 +331,17 @@ class SpaceGame {
         });
         c.globalAlpha = 1;
 
-        // UI
         c.fillStyle = '#fff';
         c.font = 'bold 18px Inter, sans-serif';
         c.textAlign = 'center';
         c.fillText('MACCHINA A GANCIO', this.width / 2, 18);
 
         c.font = '13px Inter, sans-serif';
-        c.fillText('← → = Muovi   |   SPAZIO o INVIO = Fai scendere', this.width / 2, this.height - 10);
+        c.fillText('← → = Muovi | SPAZIO o INVIO = Fai scendere', this.width / 2, this.height - 10);
 
         if (this.message && this.messageTimer > 0) {
-            c.fillStyle = this.message.includes('RARISSIMO') ? '#ffd700' : '#fff';
-            c.font = this.message.includes('RARISSIMO') ? 'bold 32px Inter, sans-serif' : 'bold 22px Inter, sans-serif';
+            c.fillStyle = this.message.includes('RARO') ? '#ffd700' : '#fff';
+            c.font = this.message.includes('RARO') ? 'bold 32px Inter, sans-serif' : 'bold 22px Inter, sans-serif';
             c.fillText(this.message, this.width / 2, this.height / 2);
         }
 
