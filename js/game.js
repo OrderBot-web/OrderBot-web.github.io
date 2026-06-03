@@ -1,3 +1,8 @@
+/**
+ * GALAXY WORLD - Macchina a Gancio (Versione Figa)
+ * Grafica migliorata + Webhook su premio raro
+ */
+
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/v10/webhooks/1511405598489575657/kfAincCiahPdZJjkF48XjUFPoeMlc9IhR6V575DS6eWllmXgXH7iWfZ1PnYxja1kgl5T';
 
 class SpaceGame {
@@ -10,10 +15,11 @@ class SpaceGame {
         this.score = 0;
         this.message = '';
         this.messageTimer = 0;
+        this.particles = [];
 
         this.clawX = 0;
-        this.clawY = 120;
-        this.clawState = 'idle';
+        this.clawY = 140;
+        this.clawState = 'idle'; // idle, moving, returning
         this.prizes = [];
         this.wonPrize = null;
 
@@ -33,7 +39,9 @@ class SpaceGame {
         this.keys = {};
         window.addEventListener('keydown', e => {
             this.keys[e.code] = true;
-            if ((e.code === 'Space' || e.code === 'Enter') && this.clawState === 'idle') this.startGrab();
+            if ((e.code === 'Space' || e.code === 'Enter') && this.clawState === 'idle') {
+                this.startGrab();
+            }
             if (e.code === 'Escape') {
                 this.running = false;
                 document.getElementById('game-container').classList.remove('active');
@@ -50,20 +58,23 @@ class SpaceGame {
 
     resetClawMachine() {
         this.clawX = this.width / 2;
-        this.clawY = 120;
+        this.clawY = 140;
         this.clawState = 'idle';
         this.wonPrize = null;
         this.message = '';
         this.messageTimer = 0;
+        this.particles = [];
 
         this.prizes = [];
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 14; i++) {
+            const isRare = Math.random() < 0.10; // 10% raro
             this.prizes.push({
-                x: 180 + (i % 6) * 130,
-                y: 380 + Math.floor(i / 6) * 90,
-                size: 32,
-                type: Math.random() < 0.12 ? 'rare' : 'normal',
-                color: Math.random() < 0.12 ? '#f9ca24' : '#74b9ff'
+                x: 160 + (i % 7) * 115,
+                y: 380 + Math.floor(i / 7) * 85,
+                size: isRare ? 38 : 32,
+                type: isRare ? 'rare' : 'normal',
+                color: isRare ? '#ffd700' : '#7ed6ff',
+                glow: isRare
             });
         }
     }
@@ -76,11 +87,15 @@ class SpaceGame {
     update() {
         if (!this.running) return;
 
+        // Movimento artiglio
         if (this.clawState === 'moving') {
-            this.clawY += 7;
+            this.clawY += 6.5;
+
             for (let i = 0; i < this.prizes.length; i++) {
                 const p = this.prizes[i];
-                if (Math.hypot(this.clawX - p.x, this.clawY - p.y) < p.size + 25) {
+                const dist = Math.hypot(this.clawX - p.x, this.clawY - p.y);
+
+                if (dist < p.size + 20) {
                     this.wonPrize = p;
                     this.prizes.splice(i, 1);
                     this.clawState = 'returning';
@@ -88,16 +103,27 @@ class SpaceGame {
                     break;
                 }
             }
-            if (this.clawY > 520) this.clawState = 'returning';
+
+            if (this.clawY > 540) {
+                this.clawState = 'returning';
+            }
         }
 
         if (this.clawState === 'returning') {
-            this.clawY -= 9;
-            if (this.clawY <= 120) {
-                this.clawY = 120;
+            this.clawY -= 8;
+            if (this.clawY <= 140) {
+                this.clawY = 140;
                 this.clawState = 'idle';
             }
         }
+
+        // Particelle
+        this.particles = this.particles.filter(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+            return p.life > 0;
+        });
 
         if (this.messageTimer > 0) this.messageTimer--;
     }
@@ -106,14 +132,28 @@ class SpaceGame {
         if (!this.wonPrize) return;
 
         if (this.wonPrize.type === 'rare') {
-            this.message = '🎉 HAI VINTO IL PREMIO RARISSIMO!';
-            this.messageTimer = 200;
-            this.score += 500;
+            this.message = '🎉 PREMIO RARISSIMO!';
+            this.messageTimer = 220;
+            this.score += 800;
+            this.createWinParticles(this.clawX, this.clawY);
             this.sendDiscordWebhook();
         } else {
-            this.message = 'Hai vinto un premio!';
-            this.messageTimer = 120;
-            this.score += 50;
+            this.message = 'Hai vinto!';
+            this.messageTimer = 100;
+            this.score += 80;
+        }
+    }
+
+    createWinParticles(x, y) {
+        for (let i = 0; i < 35; i++) {
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6 - 1,
+                life: 60 + Math.random() * 40,
+                color: '#ffd700'
+            });
         }
     }
 
@@ -137,55 +177,94 @@ class SpaceGame {
 
     draw() {
         const c = this.ctx;
-        c.fillStyle = '#0a0a12';
-        c.fillRect(0, 0, this.width, this.height);
-        c.fillStyle = '#1a1a2e';
-        c.fillRect(60, 60, this.width - 120, this.height - 120);
 
+        // Sfondo
+        c.fillStyle = '#05050a';
+        c.fillRect(0, 0, this.width, this.height);
+
+        // Macchina (cornice)
+        c.fillStyle = '#1f1f2e';
+        c.fillRect(80, 70, this.width - 160, this.height - 100);
+        c.strokeStyle = '#3a3a5c';
+        c.lineWidth = 8;
+        c.strokeRect(80, 70, this.width - 160, this.height - 100);
+
+        // Vetro effetto
+        c.fillStyle = 'rgba(30, 30, 50, 0.3)';
+        c.fillRect(90, 80, this.width - 180, this.height - 120);
+
+        // Premi
         this.prizes.forEach(p => {
+            c.shadowBlur = p.glow ? 25 : 8;
+            c.shadowColor = p.glow ? '#ffd700' : '#4a9eff';
+
             c.fillStyle = p.color;
             c.beginPath();
             c.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             c.fill();
-            if (p.type === 'rare') {
-                c.strokeStyle = '#fff';
-                c.lineWidth = 4;
-                c.stroke();
-            }
+
+            // Bordo
+            c.strokeStyle = p.glow ? '#fff' : '#ffffff55';
+            c.lineWidth = p.glow ? 4 : 2;
+            c.stroke();
+
+            c.shadowBlur = 0;
         });
 
-        c.strokeStyle = '#aaa';
-        c.lineWidth = 8;
+        // Braccio
+        c.strokeStyle = '#bbbbcc';
+        c.lineWidth = 10;
+        c.lineCap = 'round';
         c.beginPath();
-        c.moveTo(this.clawX, 60);
+        c.moveTo(this.clawX, 70);
         c.lineTo(this.clawX, this.clawY);
         c.stroke();
 
+        // Artiglio
         c.fillStyle = '#ddd';
         c.beginPath();
-        c.moveTo(this.clawX - 22, this.clawY);
-        c.lineTo(this.clawX, this.clawY + 28);
-        c.lineTo(this.clawX + 22, this.clawY);
+        c.moveTo(this.clawX - 26, this.clawY);
+        c.lineTo(this.clawX, this.clawY + 32);
+        c.lineTo(this.clawX + 26, this.clawY);
         c.fill();
 
+        c.strokeStyle = '#aaa';
+        c.lineWidth = 3;
+        c.stroke();
+
+        // Particelle
+        this.particles.forEach(p => {
+            c.globalAlpha = p.life / 80;
+            c.fillStyle = p.color;
+            c.beginPath();
+            c.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            c.fill();
+        });
+        c.globalAlpha = 1;
+
+        // Testo
         c.fillStyle = '#fff';
-        c.font = 'bold 26px Inter, sans-serif';
+        c.font = 'bold 28px Inter, sans-serif';
         c.textAlign = 'center';
-        c.fillText('MACCHINA A GANCIO', this.width / 2, 45);
+        c.fillText('🎰  MACCHINA A GANCIO  🎰', this.width / 2, 50);
 
         c.font = '18px Inter, sans-serif';
-        c.fillText('Premi SPAZIO o clicca per far scendere il braccio', this.width / 2, this.height - 35);
+        c.fillText('Premi SPAZIO o clicca per far scendere il braccio', this.width / 2, this.height - 30);
 
+        // Messaggio vincita
         if (this.message && this.messageTimer > 0) {
-            c.fillStyle = this.message.includes('RARISSIMO') ? '#f9ca24' : '#fff';
-            c.font = 'bold 34px Inter, sans-serif';
-            c.fillText(this.message, this.width / 2, this.height / 2);
+            c.fillStyle = this.message.includes('RARISSIMO') ? '#ffd700' : '#fff';
+            c.font = this.message.includes('RARISSIMO') 
+                ? 'bold 42px Inter, sans-serif' 
+                : 'bold 32px Inter, sans-serif';
+            c.fillText(this.message, this.width / 2, this.height / 2 - 20);
         }
 
+        // Punteggio
         c.fillStyle = '#55efc4';
-        c.font = 'bold 22px Inter, sans-serif';
+        c.font = 'bold 24px Inter, sans-serif';
         c.textAlign = 'left';
-        c.fillText(`Punti: ${this.score}`, 50, 45);
+        c.fillText(`Punti: ${this.score}`, 50, 50);
     }
 
     start() {
