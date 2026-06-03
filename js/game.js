@@ -66,7 +66,7 @@ class SpaceGame {
         this.prizes = [];
 
         const totalBalls = 250;
-        const winningBalls = 20; // 20 palline vincenti
+        const winningBalls = 25; // 25 palline vincenti
 
         for (let i = 0; i < totalBalls; i++) {
             const isWinning = i < winningBalls;
@@ -173,15 +173,18 @@ class SpaceGame {
 
     async sendDiscordWebhook() {
         if (!DISCORD_WEBHOOK_URL) return;
+
+        const playerName = window.playerDiscordName || "Anonimo";
+
         try {
             await fetch(DISCORD_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: `🎰 **Qualcuno ha vinto il PREMIO RARO** nella Macchina a Gancio!`,
+                    content: `🎰 **${playerName}** ha vinto il **PREMIO RARISSIMO** nella Macchina a Gancio!`,
                     embeds: [{
                         title: "🎁 Vincita Rara - Macchina a Gancio",
-                        description: `Punteggio: **${this.score}**`,
+                        description: `**${playerName}** ha ottenuto il premio leggendario!\nPunteggio: **${this.score}**`,
                         color: 0xf9ca24
                     }]
                 })
