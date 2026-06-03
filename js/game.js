@@ -13,7 +13,7 @@ class SpaceGame {
         this.particles = [];
 
         this.clawX = 0;
-        this.clawY = 85;
+        this.clawY = 90;
         this.clawState = 'idle';
         this.clawOpen = true;
         this.prizes = [];
@@ -36,8 +36,8 @@ class SpaceGame {
             this.keys[e.code] = true;
 
             if (this.clawState === 'idle') {
-                if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.moveClaw(-14);
-                if (e.code === 'ArrowRight' || e.code === 'KeyD') this.moveClaw(14);
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.moveClaw(-15);
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') this.moveClaw(15);
                 if (e.code === 'Space' || e.code === 'Enter') this.dropClaw();
             }
             if (e.code === 'Escape') {
@@ -51,12 +51,12 @@ class SpaceGame {
     }
 
     moveClaw(amount) {
-        this.clawX = Math.max(95, Math.min(this.width - 95, this.clawX + amount));
+        this.clawX = Math.max(100, Math.min(this.width - 100, this.clawX + amount));
     }
 
     resetClawMachine() {
         this.clawX = this.width / 2;
-        this.clawY = 85;
+        this.clawY = 90;
         this.clawState = 'idle';
         this.clawOpen = true;
         this.message = '';
@@ -65,22 +65,21 @@ class SpaceGame {
 
         this.prizes = [];
 
-        // 500 palline totali → 20 rare
-        const totalBalls = 500;
-        const rareCount = 20;
+        const totalBalls = 250;
+        const winningBalls = 20; // 20 palline vincenti
 
         for (let i = 0; i < totalBalls; i++) {
-            const isRare = i < rareCount; // prime 20 sono rare
+            const isWinning = i < winningBalls;
             this.prizes.push({
-                x: 70 + Math.random() * (this.width - 140),
-                y: 240 + Math.random() * 270,
-                size: isRare ? 17 : 14,
-                type: isRare ? 'rare' : 'normal',
+                x: 75 + Math.random() * (this.width - 150),
+                y: 250 + Math.random() * 260,
+                size: isWinning ? 18 : 15,
+                type: isWinning ? 'rare' : 'normal',
                 color: '#4fc3f7'
             });
         }
 
-        // Mischia le palline in modo casuale
+        // Mischia le palline
         this.prizes.sort(() => Math.random() - 0.5);
     }
 
@@ -94,16 +93,16 @@ class SpaceGame {
         if (!this.running) return;
 
         if (this.clawState === 'dropping') {
-            this.clawY += 5.2;
+            this.clawY += 5.5;
 
-            // Controlla collisione mentre scende (prende ovunque)
+            // Prende le palline ovunque mentre scende
             for (let i = 0; i < this.prizes.length; i++) {
                 const p = this.prizes[i];
                 const dist = Math.hypot(this.clawX - p.x, this.clawY - p.y);
 
-                const chance = p.type === 'rare' ? 0.88 : 0.28;
+                const chance = p.type === 'rare' ? 0.85 : 0.30;
 
-                if (dist < p.size + 9 && Math.random() < chance) {
+                if (dist < p.size + 10 && Math.random() < chance) {
                     this.wonPrize = p;
                     this.prizes.splice(i, 1);
                     this.clawState = 'returning';
@@ -112,17 +111,17 @@ class SpaceGame {
                 }
             }
 
-            if (this.clawY > 530) {
+            if (this.clawY > 515) {
                 this.clawState = 'returning';
                 this.clawOpen = false;
             }
         }
 
         if (this.clawState === 'returning') {
-            this.clawY -= 5.8;
+            this.clawY -= 6.5;
 
-            if (this.clawY <= 85) {
-                this.clawY = 85;
+            if (this.clawY <= 90) {
+                this.clawY = 90;
                 this.clawState = 'idle';
                 this.clawOpen = true;
 
@@ -148,14 +147,14 @@ class SpaceGame {
 
         if (this.wonPrize.type === 'rare') {
             this.message = '🎉 PREMIO RARISSIMO!';
-            this.messageTimer = 250;
-            this.score += 8000;
-            this.createParticles(this.clawX, this.clawY - 5, 80, '#ffd700');
+            this.messageTimer = 230;
+            this.score += 6000;
+            this.createParticles(this.clawX, this.clawY - 8, 70, '#ffd700');
             this.sendDiscordWebhook();
         } else {
             this.message = 'Preso!';
-            this.messageTimer = 45;
-            this.score += 60;
+            this.messageTimer = 50;
+            this.score += 70;
         }
     }
 
@@ -179,7 +178,7 @@ class SpaceGame {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: `🎰 **Qualcuno ha vinto il PREMIO RARISSIMO** nella Macchina a Gancio!`,
+                    content: `🎰 **Qualcuno ha vinto il PREMIO RARO** nella Macchina a Gancio!`,
                     embeds: [{
                         title: "🎁 Vincita Rara - Macchina a Gancio",
                         description: `Punteggio: **${this.score}**`,
@@ -197,20 +196,20 @@ class SpaceGame {
         c.fillRect(0, 0, this.width, this.height);
 
         // Macchina
-        c.fillStyle = '#0f0f18';
-        c.fillRect(30, 20, this.width - 60, this.height - 35);
+        c.fillStyle = '#11111a';
+        c.fillRect(35, 22, this.width - 70, this.height - 38);
 
-        c.strokeStyle = '#2a2a40';
+        c.strokeStyle = '#2a2a42';
         c.lineWidth = 5;
-        c.strokeRect(30, 20, this.width - 60, this.height - 35);
+        c.strokeRect(35, 22, this.width - 70, this.height - 38);
 
         // Vetro
-        c.fillStyle = 'rgba(15, 15, 45, 0.05)';
-        c.fillRect(35, 25, this.width - 70, this.height - 45);
+        c.fillStyle = 'rgba(15, 15, 45, 0.06)';
+        c.fillRect(40, 27, this.width - 80, this.height - 48);
 
-        // 500 Palline
+        // 250 Palline
         this.prizes.forEach(p => {
-            c.shadowBlur = 2;
+            c.shadowBlur = 3;
             c.shadowColor = '#4fc3f7';
 
             c.fillStyle = p.color;
@@ -218,9 +217,9 @@ class SpaceGame {
             c.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             c.fill();
 
-            c.fillStyle = 'rgba(255,255,255,0.2)';
+            c.fillStyle = 'rgba(255,255,255,0.22)';
             c.beginPath();
-            c.arc(p.x - p.size * 0.18, p.y - p.size * 0.18, p.size * 0.2, 0, Math.PI * 2);
+            c.arc(p.x - p.size * 0.2, p.y - p.size * 0.2, p.size * 0.2, 0, Math.PI * 2);
             c.fill();
 
             c.shadowBlur = 0;
@@ -228,27 +227,27 @@ class SpaceGame {
 
         // Braccio
         c.strokeStyle = '#cccccc';
-        c.lineWidth = 5;
+        c.lineWidth = 6;
         c.beginPath();
-        c.moveTo(this.clawX, 20);
+        c.moveTo(this.clawX, 22);
         c.lineTo(this.clawX, this.clawY);
         c.stroke();
 
         // Artiglio
-        const openOffset = this.clawOpen ? 11 : 3;
+        const openOffset = this.clawOpen ? 12 : 3;
         c.fillStyle = '#e8e8e8';
 
         c.beginPath();
         c.moveTo(this.clawX, this.clawY);
-        c.lineTo(this.clawX - openOffset, this.clawY + 12);
-        c.lineTo(this.clawX - openOffset + 3, this.clawY + 15);
+        c.lineTo(this.clawX - openOffset, this.clawY + 14);
+        c.lineTo(this.clawX - openOffset + 3, this.clawY + 17);
         c.lineTo(this.clawX, this.clawY + 2);
         c.fill();
 
         c.beginPath();
         c.moveTo(this.clawX, this.clawY);
-        c.lineTo(this.clawX + openOffset, this.clawY + 12);
-        c.lineTo(this.clawX + openOffset - 3, this.clawY + 15);
+        c.lineTo(this.clawX + openOffset, this.clawY + 14);
+        c.lineTo(this.clawX + openOffset - 3, this.clawY + 17);
         c.lineTo(this.clawX, this.clawY + 2);
         c.fill();
 
@@ -264,23 +263,23 @@ class SpaceGame {
 
         // UI
         c.fillStyle = '#fff';
-        c.font = 'bold 17px Inter, sans-serif';
+        c.font = 'bold 18px Inter, sans-serif';
         c.textAlign = 'center';
         c.fillText('MACCHINA A GANCIO', this.width / 2, 18);
 
-        c.font = '12px Inter, sans-serif';
-        c.fillText('← → = Muovi   |   SPAZIO o INVIO = Fai scendere', this.width / 2, this.height - 8);
+        c.font = '13px Inter, sans-serif';
+        c.fillText('← → = Muovi   |   SPAZIO o INVIO = Fai scendere', this.width / 2, this.height - 10);
 
         if (this.message && this.messageTimer > 0) {
             c.fillStyle = this.message.includes('RARISSIMO') ? '#ffd700' : '#fff';
-            c.font = this.message.includes('RARISSIMO') ? 'bold 30px Inter, sans-serif' : 'bold 20px Inter, sans-serif';
+            c.font = this.message.includes('RARISSIMO') ? 'bold 32px Inter, sans-serif' : 'bold 22px Inter, sans-serif';
             c.fillText(this.message, this.width / 2, this.height / 2);
         }
 
         c.fillStyle = '#55efc4';
-        c.font = 'bold 14px Inter, sans-serif';
+        c.font = 'bold 15px Inter, sans-serif';
         c.textAlign = 'left';
-        c.fillText(`Punti: ${this.score}`, 20, 18);
+        c.fillText(`Punti: ${this.score}`, 25, 18);
     }
 
     start() {
